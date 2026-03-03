@@ -14,7 +14,7 @@
 <nav class="navbar" id="navbar">
   <div class="nav-container">
     <a href="index.html" class="nav-logo">
-      <img src="https://img.icons8.com/color/48/cow.png" alt="Pinnacle Logo" class="logo-icon"/>
+      <img src="pinnacle-logo.jpeg" alt="Pinnacle Logo" class="logo-icon"/>
       <span class="logo-text">PINNACLE</span>
     </a>
     <ul class="nav-links" id="navLinks">
@@ -26,7 +26,11 @@
     </ul>
     <div class="nav-cta">
       <a href="marketplace.html" class="btn btn-outline">Browse Livestock</a>
-      <a href="#" class="btn btn-primary" onclick="openModal('register-modal')">List Your Farm</a>
+      <a href="#" class="btn btn-primary" id="navJoinBtn" onclick="openModal('register-modal')">List Your Farm</a>
+      <div class="nav-user-area" id="navUserArea" style="display:none">
+        <span class="nav-user-greeting">👋 <strong id="navUserName">User</strong></span>
+        <button class="btn btn-outline btn-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
     </div>
     <button class="hamburger" id="hamburger" onclick="toggleNav()">
       <span></span><span></span><span></span>
@@ -152,7 +156,7 @@
   <div class="container">
     <div class="footer-grid">
       <div class="footer-brand">
-        <a href="index.html" class="nav-logo"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><span class="logo-text">PINNACLE</span></a>
+        <a href="index.html" class="nav-logo"><img src="pinnacle-logo.jpeg" alt=""/><span class="logo-text">PINNACLE</span></a>
         <p>Kenya's most trusted livestock marketplace.</p>
         <div class="social-links"><a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a><a href="#"><i class="fab fa-instagram"></i></a></div>
       </div>
@@ -164,20 +168,48 @@
   </div>
 </footer>
 
-<!-- REGISTER MODAL -->
+<!-- REGISTER / LOGIN MODAL -->
 <div class="modal-overlay" id="register-modal" onclick="closeModalOutside(event,'register-modal')">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal('register-modal')"><i class="fas fa-times"></i></button>
-    <div class="modal-header"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><h2>Join Pinnacle</h2><p>List your livestock and reach thousands of buyers</p></div>
-    <div class="modal-tabs"><button class="tab-btn active" onclick="switchTab('farmer')">I'm a Farmer</button><button class="tab-btn" onclick="switchTab('buyer')">I'm a Buyer</button></div>
-    <form class="modal-form" onsubmit="handleRegister(event)">
-      <div class="form-row"><input type="text" placeholder="Full Name" required/><input type="tel" placeholder="Phone Number" required/></div>
-      <input type="email" placeholder="Email Address" required/>
-      <input type="text" placeholder="County / Region" required/>
-      <div id="farmerFields" style="display:flex;flex-direction:column;gap:14px"><input type="text" placeholder="Farm Name"/><select><option>Main Livestock Type</option><option>Cattle</option><option>Goats</option><option>Sheep</option></select></div>
-      <input type="password" placeholder="Create Password" required/>
-      <button type="submit" class="btn btn-primary btn-full">Create Account <i class="fas fa-arrow-right"></i></button>
-    </form>
+    <div class="modal-header">
+      <img src="pinnacle-logo.jpeg" alt=""/>
+      <h2 id="authModalTitle">Join Pinnacle</h2>
+      <p id="authModalSub">List your livestock and reach thousands of buyers</p>
+    </div>
+    <div class="auth-mode-tabs">
+      <button class="auth-mode-btn active" onclick="switchAuthMode('register',this)">Register</button>
+      <button class="auth-mode-btn" onclick="switchAuthMode('login',this)">Login</button>
+    </div>
+    <div id="authRegisterPanel">
+      <div class="modal-tabs">
+        <button class="tab-btn active" onclick="switchTab('farmer',this)">I'm a Farmer</button>
+        <button class="tab-btn" onclick="switchTab('buyer',this)">I'm a Buyer</button>
+      </div>
+      <form class="modal-form" id="registerForm">
+        <div class="form-row">
+          <input type="text" name="full_name" placeholder="Full Name" required/>
+          <input type="tel" name="phone" placeholder="Phone Number" required/>
+        </div>
+        <input type="email" name="email" placeholder="Email Address" required/>
+        <div class="farmer-fields" id="farmerFields">
+          <input type="text" name="farm_name" placeholder="Farm Name"/>
+          <select name="livestock_type"><option value="">Main Livestock Type</option><option>Cattle</option><option>Goats</option><option>Sheep</option><option>Poultry</option><option>Pigs</option></select>
+        </div>
+        <input type="hidden" name="role" id="registerRole" value="farmer"/>
+        <input type="password" name="password" placeholder="Create Password" required/>
+        <button type="submit" class="btn btn-primary btn-full">Create Account <i class="fas fa-arrow-right"></i></button>
+        <p class="form-note">Already have an account? <a href="#" onclick="event.preventDefault();switchAuthMode('login',null)">Sign in</a></p>
+      </form>
+    </div>
+    <div id="authLoginPanel" style="display:none">
+      <form class="modal-form" id="loginForm">
+        <input type="email" name="login_email" placeholder="Email Address" required/>
+        <input type="password" name="login_password" placeholder="Password" required/>
+        <button type="submit" class="btn btn-primary btn-full">Sign In <i class="fas fa-sign-in-alt"></i></button>
+        <p class="form-note">Don't have an account? <a href="#" onclick="event.preventDefault();switchAuthMode('register',null)">Register free</a></p>
+      </form>
+    </div>
   </div>
 </div>
 
