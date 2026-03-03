@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pinnacle Livestock Marketplace</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- ===== MARKET PRICE TICKER ===== -->
+<div class="price-ticker">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="https://img.icons8.com/color/48/cow.png" alt="Pinnacle Logo" class="logo-icon"/>
+      <span class="logo-text">PINNACLE</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+      <li><a href="about.html">About Us</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="#how-it-works">How It Works</a></li>
+      <li><a href="premium.html" class="nav-premium"><i class="fas fa-star"></i> Premium</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="marketplace.html" class="btn btn-outline">Browse Livestock</a>
+      <a href="#register-modal" class="btn btn-primary" id="navJoinBtn" onclick="openModal('register-modal')">List Your Farm</a>
+      <div class="nav-user-area" id="navUserArea" style="display:none">
+        <span class="nav-user-greeting">👋 <strong id="navUserName">User</strong></span>
+        <button class="btn btn-outline btn-sm" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+      </div>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- ===== HERO SECTION ===== -->
+<section class="hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="online-users-badge">
+      <span class="online-pulse"></span>
+      <span><strong id="onlineCount">287</strong> farmers online now</span>
+    </div>
+    <span class="hero-badge"><i class="fas fa-shield-alt"></i> Trusted Livestock Marketplace</span>
+    <h1 class="hero-title">Connect Farmers <br/>with Trusted <span class="highlight">Buyers</span></h1>
+    <p class="hero-subtitle">Pinnacle is East Africa's premier livestock marketplace — where farmers sell confidently and buyers find quality animals, all in one trusted platform.</p>
+    <div class="hero-search">
+      <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="heroSearch" placeholder="Search cattle, goats, sheep, poultry..."/>
+        <select id="locationSelect">
+          <option value="">All Regions</option>
+          <option>Kenya</option><option>Uganda</option><option>Tanzania</option>
+          <option>Congo</option><option>Ruanda</option><option>Ethiopia</option>
+        </select>
+        <button class="btn btn-primary" onclick="searchListings()">Search</button>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><span class="stat-number" data-target="4800">0</span><span>+</span><p>Active Farmers</p></div>
+      <div class="stat-item"><span class="stat-number" data-target="12000">0</span><span>+</span><p>Livestock Listed</p></div>
+      <div class="stat-item"><span class="stat-number" data-target="8500">0</span><span>+</span><p>Successful Sales</p></div>
+      <div class="stat-item"><span class="stat-number" data-target="98">0</span><span>%</span><p>Satisfaction Rate</p></div>
+    </div>
+  </div>
+  <div class="hero-image">
+    <div class="floating-card card1"><i class="fas fa-cow"></i><span>Cattle <b>Available</b></span></div>
+    <div class="floating-card card2"><i class="fas fa-check-circle"></i><span>Verified <b>Sellers</b></span></div>
+    <div class="floating-card card3"><i class="fas fa-headset"></i><span>24/7 <b>Support</b></span></div>
+  </div>
+</section>
+
+<!-- ===== CATEGORIES SECTION ===== -->
+<section class="categories section-pad" id="categories">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">Browse by Type</span>
+      <h2>Explore Our <span class="highlight">Livestock Categories</span></h2>
+      <p>Find exactly what you need from our wide range of quality livestock</p>
+    </div>
+    <div class="categories-grid">
+      <a href="marketplace.html?type=cattle" class="category-card">
+        <div class="cat-icon"><img src="https://img.icons8.com/color/80/cow.png" alt="Cattle"/></div>
+        <h3>Cattle</h3><p>Dairy & Beef breeds</p><span class="cat-count">1,240 Listed</span>
+      </a>
+      <a href="marketplace.html?type=goats" class="category-card">
+        <div class="cat-icon"><img src="https://img.icons8.com/color/80/goat.png" alt="Goats"/></div>
+        <h3>Goats</h3><p>Meat & Dairy breeds</p><span class="cat-count">980 Listed</span>
+      </a>
+      <a href="marketplace.html?type=sheep" class="category-card">
+        <div class="cat-icon"><img src="https://img.icons8.com/color/80/sheep.png" alt="Sheep"/></div>
+        <h3>Sheep</h3><p>Merino, Dorper & more</p><span class="cat-count">620 Listed</span>
+      </a>
+      <a href="marketplace.html?type=poultry" class="category-card">
+        <div class="cat-icon"><img src="https://img.icons8.com/color/80/chicken.png" alt="Poultry"/></div>
+        <h3>Poultry</h3><p>Broilers, Layers & Ducks</p><span class="cat-count">3,400 Listed</span>
+      </a>
+      <a href="marketplace.html?type=pigs" class="category-card">
+        <div class="cat-icon"><img src="https://img.icons8.com/color/80/pig.png" alt="Pigs"/></div>
+        <h3>Pigs</h3><p>Large White & Duroc</p><span class="cat-count">310 Listed</span>
+      </a>
+      <a href="marketplace.html?type=rabbits" class="category-card">
+        <div class="cat-icon"><img src="https://img.icons8.com/color/80/rabbit.png" alt="Rabbits"/></div>
+        <h3>Rabbits</h3><p>Meat & Breeding rabbits</p><span class="cat-count">180 Listed</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== MEDIA / PRESS BAR ===== -->
+<section class="media-bar">
+  <div class="container">
+    <div class="media-bar-inner">
+      <span class="media-bar-label">As Featured In</span>
+      <a href="#" class="media-logo">BBC<span>NEWS</span></a>
+      <a href="#" class="media-logo">NATION<span>MEDIA</span></a>
+      <a href="#" class="media-logo">THE STANDARD</a>
+      <a href="#" class="media-logo">KTN<span>NEWS</span></a>
+      <a href="#" class="media-logo">CITIZEN<span>TV</span></a>
+      <a href="#" class="media-logo">BUSINESS<span>DAILY</span></a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FEATURED LISTINGS ===== -->
+<section class="featured section-pad" id="featured">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">Just Listed</span>
+      <h2>Featured <span class="highlight">Livestock</span></h2>
+      <p>Hand-picked quality animals from verified farmers across the country</p>
+    </div>
+    <div class="listings-grid" id="featuredGrid">
+      <!-- Cards injected by JS -->
+    </div>
+    <div class="text-center mt-40">
+      <a href="marketplace.html" class="btn btn-primary btn-lg">View All Listings <i class="fas fa-arrow-right"></i></a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== HOW IT WORKS ===== -->
+<section class="how-it-works section-pad" id="how-it-works">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">Simple Process</span>
+      <h2>How <span class="highlight">Pinnacle</span> Works</h2>
+      <p>Buying or selling livestock has never been this easy and secure</p>
+    </div>
+    <div class="steps-row">
+      <div class="step-card">
+        <div class="step-num">01</div>
+        <div class="step-icon"><i class="fas fa-user-plus"></i></div>
+        <h3>Create Your Account</h3>
+        <p>Sign up as a Farmer or Buyer. Verification takes just minutes.</p>
+      </div>
+      <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="step-card">
+        <div class="step-num">02</div>
+        <div class="step-icon"><i class="fas fa-list-alt"></i></div>
+        <h3>List or Browse</h3>
+        <p>Farmers post livestock with photos & details. Buyers search and filter by type, price, and location.</p>
+      </div>
+      <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="step-card">
+        <div class="step-num">03</div>
+        <div class="step-icon"><i class="fas fa-comments"></i></div>
+        <h3>Connect & Negotiate</h3>
+        <p>Message sellers directly. Our customer service team is available to help facilitate deals.</p>
+      </div>
+      <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+      <div class="step-card">
+        <div class="step-num">04</div>
+        <div class="step-icon"><i class="fas fa-handshake"></i></div>
+        <h3>Complete the Deal</h3>
+        <p>Agree on price, arrange transport, and complete your transaction safely.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PREMIUM PLANS SECTION ===== -->
+<section class="premium-plans section-pad" id="premium">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge"><i class="fas fa-star"></i> Premium Plans</span>
+      <h2 style="color:var(--white)">Simple, Transparent <span style="color:var(--gold-light)">Pricing</span></h2>
+      <p style="color:rgba(255,255,255,.6)">Choose the plan that fits your farming business — upgrade or cancel anytime</p>
+    </div>
+    <!-- Billing Toggle -->
+    <div class="billing-toggle">
+      <span class="billing-label-monthly active-label">Monthly</span>
+      <label class="toggle-switch">
+        <input type="checkbox" id="billingToggle"/>
+        <span class="toggle-slider"></span>
+      </label>
+      <span class="billing-label-annual">Annual</span>
+      <span class="save-badge">SAVE 20%</span>
+    </div>
+    <!-- Pricing Cards -->
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="pricing-card">
+        <div class="plan-icon free-icon"><i class="fas fa-seedling"></i></div>
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">
+          <span class="plan-currency">KSh</span>
+          <span class="plan-amount" id="price-free">0</span>
+        </div>
+        <div class="plan-period">/month</div>
+        <div class="plan-annual-note" id="note-free"></div>
+        <p class="plan-desc">Perfect for small-scale and large-scale farmers just getting started on Pinnacle.</p>
+        <ul class="plan-features">
+          <li class="plan-feature"><i class="fas fa-check"></i> 3 livestock listings/month</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Basic search visibility</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Email & chat support</li>
+          <li class="plan-feature disabled"><i class="fas fa-times"></i> Price alerts</li>
+          <li class="plan-feature disabled"><i class="fas fa-times"></i> Analytics dashboard</li>
+          <li class="plan-feature disabled"><i class="fas fa-times"></i> Live auction access</li>
+        </ul>
+        <button class="btn btn-plan-free" onclick="openUpgrade('free')">Get Started Free</button>
+      </div>
+      <!-- Pro -->
+      <div class="pricing-card featured">
+        <div class="popular-badge">⭐ MOST POPULAR</div>
+        <div class="plan-icon pro-icon"><i class="fas fa-crown"></i></div>
+        <div class="plan-name">Pro Farmer</div>
+        <div class="plan-price">
+          <span class="plan-currency">KSh</span>
+          <span class="plan-amount" id="price-pro">1,999</span>
+        </div>
+        <div class="plan-period">/month</div>
+        <div class="plan-annual-note" id="note-pro"></div>
+        <p class="plan-desc">Designed for serious farmers who want maximum reach and smart tools.</p>
+        <ul class="plan-features">
+          <li class="plan-feature"><i class="fas fa-check"></i> 25 listings/month</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Priority search placement</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Verified seller badge</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Real-time price alerts</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Analytics dashboard</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Live auction access</li>
+        </ul>
+        <button class="btn btn-plan-pro" onclick="openUpgrade('pro')"><i class="fas fa-bolt"></i> Upgrade to Pro</button>
+      </div>
+      <!-- Enterprise -->
+      <div class="pricing-card">
+        <div class="plan-icon enterprise-icon"><i class="fas fa-building"></i></div>
+        <div class="plan-name">Enterprise</div>
+        <div class="plan-price">
+          <span class="plan-currency">KSh</span>
+          <span class="plan-amount" id="price-enterprise">5,999</span>
+        </div>
+        <div class="plan-period">/month</div>
+        <div class="plan-annual-note" id="note-enterprise"></div>
+        <p class="plan-desc">For large-scale farms, agribusinesses, and cooperatives needing full power.</p>
+        <ul class="plan-features">
+          <li class="plan-feature"><i class="fas fa-check"></i> Unlimited listings</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Featured homepage placement</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Dedicated account manager</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Escrow payment protection</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> Transport booking tool</li>
+          <li class="plan-feature"><i class="fas fa-check"></i> API access & integrations</li>
+        </ul>
+        <button class="btn btn-plan-ent" onclick="openUpgrade('enterprise')"><i class="fas fa-rocket"></i> Go Enterprise</button>
+      </div>
+    </div>
+    <p class="pricing-note"><i class="fas fa-lock"></i> All plans include SSL-secured payments via M-Pesa or Card. <a href="premium.html">See full feature comparison →</a></p>
+  </div>
+</section>
+
+<!-- ===== CUSTOMER SERVICE MANAGER ===== -->
+<section class="csm-section section-pad" id="support">
+  <div class="container">
+    <div class="csm-card">
+      <div class="csm-image-wrap">
+        <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=400&h=400&fit=crop&crop=face" alt="Customer Service Manager" class="csm-photo"/>
+        <div class="csm-badge-wrap"><span class="badge-online"><i class="fas fa-circle"></i> Available Now</span></div>
+      </div>
+      <div class="csm-info">
+        <span class="section-badge">Dedicated Support</span>
+        <h2>Meet Your Trusted <span class="highlight">Customer Service Manager</span></h2>
+        <h3 class="csm-name">Grace Achieng</h3>
+        <p class="csm-title">Head of Customer Relations — Pinnacle Livestock</p>
+        <p class="csm-desc">With over 8 years of agricultural and trade facilitation experience, Grace ensures every farmer and buyer on Pinnacle has a smooth, fair, and trustworthy experience. She personally oversees dispute resolution, buyer verification, and seller onboarding.</p>
+        <div class="csm-credentials">
+          <div class="cred"><i class="fas fa-star"></i><span>4.9/5 Customer Rating</span></div>
+          <div class="cred"><i class="fas fa-clock"></i><span>Avg. Response: &lt;2 hrs</span></div>
+          <div class="cred"><i class="fas fa-check-circle"></i><span>2,000+ Cases Resolved</span></div>
+        </div>
+        <div class="csm-actions">
+          <a href="contact.html" class="btn btn-primary"><i class="fas fa-headset"></i> Talk to Grace</a>
+          <a href="contact.html#faq" class="btn btn-outline"><i class="fas fa-question-circle"></i> View FAQs</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TESTIMONIALS ===== -->
+<section class="testimonials section-pad" id="testimonials">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">What People Say</span>
+      <h2>Trusted by <span class="highlight">Farmers & Buyers</span> Nationwide</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testi-card">
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p>"I sold 15 Friesian heifers in just 3 days. The platform is easy to use and the support team is incredible. Pinnacle has changed my farming business completely!"</p>
+        <div class="testi-author"><img src="https://randomuser.me/api/portraits/men/32.jpg" alt=""/><div><strong>James Mwangi</strong><span>Dairy Farmer, Nakuru</span></div></div>
+      </div>
+      <div class="testi-card featured-testi">
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+        <p>"As a buyer, I was skeptical at first, but Pinnacle verified sellers gave me confidence. I sourced quality Boer goats for my restaurant supply chain seamlessly."</p>
+        <div class="testi-author"><img src="https://randomuser.me/api/portraits/women/44.jpg" alt=""/><div><strong>Fatuma Hassan</strong><span>Meat Supplier, Mombasa</span></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="stars"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i></div>
+        <p>"Grace and her team resolved a delivery dispute within hours. The customer service at Pinnacle is world-class. I recommend every farmer to join this platform."</p>
+        <div class="testi-author"><img src="https://randomuser.me/api/portraits/men/78.jpg" alt=""/><div><strong>Peter Kamau</strong><span>Poultry Farmer, Kiambu</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== TRUST & SECURITY SECTION ===== -->
+<section class="trust-section section-pad">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge"><i class="fas fa-shield-alt"></i> Trust &amp; Security</span>
+      <h2>Why Farmers <span class="highlight">Trust Pinnacle</span></h2>
+      <p>Your safety, privacy, and success are our top priorities — backed by real guarantees</p>
+    </div>
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fas fa-user-check"></i></div>
+        <h4>Verified Sellers</h4>
+        <p>Every farmer is ID-verified before listing. You deal only with real, trusted people.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fas fa-lock"></i></div>
+        <h4>Secure Payments</h4>
+        <p>M-Pesa & card payments are 256-bit SSL encrypted. Your money is always protected.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fas fa-hand-holding-usd"></i></div>
+        <h4>Buyer Protection</h4>
+        <p>Not satisfied? Our escrow system holds funds until you confirm the livestock is as described.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fas fa-headset"></i></div>
+        <h4>24/7 Support</h4>
+        <p>Our team including Grace Achieng is always available to resolve disputes within 2 hours.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fas fa-database"></i></div>
+        <h4>Data Privacy</h4>
+        <p>Your personal and farm data is never sold. We comply with Kenya's Data Protection Act.</p>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon"><i class="fas fa-undo-alt"></i></div>
+        <h4>Money-Back Guarantee</h4>
+        <p>If a verified listing is fraudulent, we refund your premium subscription — no questions asked.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== LIVE AUCTIONS SECTION ===== -->
+<section class="live-auctions section-pad" id="auctions">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge" style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2)"><i class="fas fa-gavel"></i> Live Now</span>
+      <h2>Live <span class="highlight">Livestock Auctions</span></h2>
+      <p>Bid in real-time on premium animals. Auctions close fast — don't miss out!</p>
+    </div>
+    <div class="auctions-grid">
+      <!-- Auction 0 -->
+      <div class="auction-card">
+        <div class="auction-img">
+          <img src="https://images.unsplash.com/photo-1570042225831-d98fa7577f1e?w=600&h=400&fit=crop" alt="Friesian Cattle"/>
+          <span class="auction-live-badge">LIVE</span>
+          <span class="auction-premium-tag">PRO</span>
+        </div>
+        <div class="auction-body">
+          <h3>3x Friesian Heifers — Nakuru</h3>
+          <div class="auction-meta">
+            <span><i class="fas fa-map-marker-alt"></i> Nakuru County</span>
+            <span><i class="fas fa-weight"></i> Avg 320kg each</span>
+          </div>
+          <div class="auction-bids-row">
+            <div class="current-bid"><label>Current Bid</label><span id="current-bid-0">KSh 95,000</span></div>
+            <div class="bid-count"><label>Total Bids</label><span id="bid-count-0">23 bids</span></div>
+          </div>
+          <div class="auction-timer">
+            <div class="timer-unit"><span id="timer-h-0">02</span><label>HRS</label></div>
+            <div class="timer-sep">:</div>
+            <div class="timer-unit"><span id="timer-m-0">14</span><label>MIN</label></div>
+            <div class="timer-sep">:</div>
+            <div class="timer-unit"><span id="timer-s-0">30</span><label>SEC</label></div>
+          </div>
+          <button class="btn-bid" onclick="placeBid(0)"><i class="fas fa-gavel"></i> Place Bid</button>
+        </div>
+      </div>
+      <!-- Auction 1 -->
+      <div class="auction-card">
+        <div class="auction-img">
+          <img src="https://images.unsplash.com/photo-1516467508483-a7212febe31a?w=600&h=400&fit=crop" alt="Boer Goats"/>
+          <span class="auction-live-badge">LIVE</span>
+          <span class="auction-premium-tag">PRO</span>
+        </div>
+        <div class="auction-body">
+          <h3>10x Boer Goats — Kajiado</h3>
+          <div class="auction-meta">
+            <span><i class="fas fa-map-marker-alt"></i> Kajiado County</span>
+            <span><i class="fas fa-weight"></i> 40–55kg each</span>
+          </div>
+          <div class="auction-bids-row">
+            <div class="current-bid"><label>Current Bid</label><span id="current-bid-1">KSh 18,500</span></div>
+            <div class="bid-count"><label>Total Bids</label><span id="bid-count-1">17 bids</span></div>
+          </div>
+          <div class="auction-timer">
+            <div class="timer-unit"><span id="timer-h-1">00</span><label>HRS</label></div>
+            <div class="timer-sep">:</div>
+            <div class="timer-unit"><span id="timer-m-1">47</span><label>MIN</label></div>
+            <div class="timer-sep">:</div>
+            <div class="timer-unit"><span id="timer-s-1">12</span><label>SEC</label></div>
+          </div>
+          <button class="btn-bid" onclick="placeBid(1)"><i class="fas fa-gavel"></i> Place Bid</button>
+        </div>
+      </div>
+      <!-- Auction 2 -->
+      <div class="auction-card">
+        <div class="auction-img">
+          <img src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&h=400&fit=crop" alt="Angus Bull"/>
+          <span class="auction-live-badge">LIVE</span>
+          <span class="auction-premium-tag">ENTERPRISE</span>
+        </div>
+        <div class="auction-body">
+          <h3>Angus Bull (Breeding) — Eldoret</h3>
+          <div class="auction-meta">
+            <span><i class="fas fa-map-marker-alt"></i> Eldoret, Uasin Gishu</span>
+            <span><i class="fas fa-weight"></i> 580kg</span>
+          </div>
+          <div class="auction-bids-row">
+            <div class="current-bid"><label>Current Bid</label><span id="current-bid-2">KSh 185,000</span></div>
+            <div class="bid-count"><label>Total Bids</label><span id="bid-count-2">30 bids</span></div>
+          </div>
+          <div class="auction-timer">
+            <div class="timer-unit"><span id="timer-h-2">05</span><label>HRS</label></div>
+            <div class="timer-sep">:</div>
+            <div class="timer-unit"><span id="timer-m-2">03</span><label>MIN</label></div>
+            <div class="timer-sep">:</div>
+            <div class="timer-unit"><span id="timer-s-2">55</span><label>SEC</label></div>
+          </div>
+          <button class="btn-bid" onclick="placeBid(2)"><i class="fas fa-gavel"></i> Place Bid</button>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-40">
+      <a href="premium.html#auctions" class="btn btn-primary btn-lg"><i class="fas fa-gavel"></i> View All Auctions</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== PRICE ESTIMATOR SECTION ===== -->
+<section class="price-estimator section-pad" id="estimator">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge"><i class="fas fa-calculator"></i> Free Tool</span>
+      <h2 style="color:var(--white)">Livestock <span style="color:var(--gold-light)">Price Estimator</span></h2>
+      <p style="color:rgba(255,255,255,.65)">Get an instant market estimate for your livestock based on live data</p>
+    </div>
+    <div class="estimator-layout">
+      <!-- Form -->
+      <div class="estimator-form-card">
+        <h3><i class="fas fa-sliders-h" style="color:var(--gold-light);margin-right:10px"></i>Enter Animal Details</h3>
+        <div class="est-group">
+          <label>Livestock Type</label>
+          <select id="estType">
+            <option value="">— Select Type —</option>
+            <option>Cattle</option><option>Goats</option><option>Sheep</option>
+            <option>Poultry</option><option>Pigs</option><option>Rabbits</option>
+          </select>
+        </div>
+        <div class="est-row">
+          <div class="est-group">
+            <label>Breed</label>
+            <select id="estBreed">
+              <option value="">— Select —</option>
+              <option value="exotic">Exotic / Pure</option>
+              <option value="crossbreed">Crossbreed</option>
+              <option value="local">Indigenous / Local</option>
+            </select>
+          </div>
+          <div class="est-group">
+            <label>Age Group</label>
+            <select id="estAge">
+              <option value="">— Select —</option>
+              <option value="young">Young (0–6 mo)</option>
+              <option value="juvenile">Juvenile (6–18 mo)</option>
+              <option value="adult">Adult (18 mo+)</option>
+              <option value="breeding">Breeding Stock</option>
+            </select>
+          </div>
+        </div>
+        <div class="est-row">
+          <div class="est-group">
+            <label>Live Weight (kg)</label>
+            <input type="number" id="estWeight" placeholder="e.g. 280" min="1" max="2000"/>
+          </div>
+          <div class="est-group">
+            <label>Quantity</label>
+            <input type="number" id="estQty" placeholder="e.g. 5" min="1" max="500" value="1"/>
+          </div>
+        </div>
+        <div class="est-group">
+          <label>Body Condition</label>
+          <select id="estCondition">
+            <option value="">— Select —</option>
+            <option value="excellent">Excellent</option>
+            <option value="good">Good</option>
+            <option value="fair">Fair</option>
+          </select>
+        </div>
+        <button class="btn-estimate" id="estBtn"><i class="fas fa-calculator"></i> Calculate Market Value</button>
+      </div>
+      <!-- Results -->
+      <div class="estimator-result-card">
+        <div id="estPlaceholder" class="result-placeholder">
+          <i class="fas fa-chart-line"></i>
+          <p>Fill in the details on the left and click <strong style="color:var(--gold-light)">Calculate</strong> to see your market estimate</p>
+        </div>
+        <div id="estOutput" class="result-output">
+          <div class="result-range-label">Estimated Market Range (per animal)</div>
+          <div class="result-range">
+            <div class="result-low"><span id="estLow">—</span><label>Low</label></div>
+            <div class="result-mid"><span id="estMid">—</span><label>Best Estimate</label></div>
+            <div class="result-high"><span id="estHigh">—</span><label>High</label></div>
+          </div>
+          <div class="result-breakdown">
+            <div class="result-breakdown-item"><span>Animal</span><span id="estAnimal">—</span></div>
+            <div class="result-breakdown-item"><span>Weight</span><span id="estWeightOut">—</span></div>
+            <div class="result-breakdown-item"><span>Breed Type</span><span id="estBreedOut">—</span></div>
+            <div class="result-breakdown-item"><span>Quantity</span><span id="estQtyOut">—</span></div>
+            <div class="result-breakdown-item" style="border-top:2px solid rgba(255,255,255,.2);padding-top:14px;margin-top:4px"><span style="font-weight:700;color:var(--white)">Total Estimate</span><span id="estTotalOut" style="color:var(--gold-light);font-size:1.1rem">—</span></div>
+          </div>
+          <p class="result-disclaimer"><i class="fas fa-info-circle"></i> Estimates based on current Pinnacle market data. Actual prices may vary by region and market conditions.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REFERRAL PROGRAM SECTION ===== -->
+<section class="referral-section section-pad">
+  <div class="container">
+    <div class="referral-layout">
+      <!-- Left: info -->
+      <div class="referral-content">
+        <span class="section-badge"><i class="fas fa-gift"></i> Referral Program</span>
+        <h2>Invite a Farmer, <span style="color:var(--gold-light)">Earn KSh 500</span></h2>
+        <p>Share Pinnacle with fellow farmers and earn real money for every new user who joins and makes their first listing.</p>
+        <div class="ref-steps">
+          <div class="ref-step">
+            <div class="ref-num">1</div>
+            <div class="ref-step-text">
+              <strong>Copy your unique referral link</strong>
+              <span>Found in the card on the right — it's personal to you.</span>
+            </div>
+          </div>
+          <div class="ref-step">
+            <div class="ref-num">2</div>
+            <div class="ref-step-text">
+              <strong>Share with farmers via WhatsApp or SMS</strong>
+              <span>Send it to your farming group chats or fellow farmers.</span>
+            </div>
+          </div>
+          <div class="ref-step">
+            <div class="ref-num">3</div>
+            <div class="ref-step-text">
+              <strong>Earn KSh 500 per successful referral</strong>
+              <span>Paid directly to your M-Pesa when they make a listing.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- Right: card -->
+      <div class="referral-card">
+        <h3><i class="fas fa-link" style="color:var(--gold-light);margin-right:8px"></i> Your Referral Link</h3>
+        <div class="ref-reward-box">
+          <div class="ref-reward-icon">💰</div>
+          <div class="ref-reward-text">
+            <strong>KSh 500 per referral</strong>
+            <span>Paid to M-Pesa within 24 hours</span>
+          </div>
+        </div>
+        <div class="ref-link-row">
+          <input type="text" id="refLinkInput" readonly placeholder="Generating your link..."/>
+          <button class="btn-copy" onclick="copyReferralLink()"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        <div class="ref-share-row">
+          <button class="ref-share-btn ref-wa" onclick="shareReferral('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+          <button class="ref-share-btn ref-fb" onclick="shareReferral('facebook')"><i class="fab fa-facebook"></i> Facebook</button>
+          <button class="ref-share-btn ref-tw" onclick="shareReferral('twitter')"><i class="fab fa-twitter"></i> Twitter</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== REGISTER CTA BANNER ===== -->
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-content">
+      <div>
+        <h2>Ready to Grow Your Livestock Business?</h2>
+        <p>Join 4,800+ farmers already using Pinnacle to sell faster and earn more.</p>
+      </div>
+      <div class="cta-buttons">
+        <button class="btn btn-white" onclick="openModal('register-modal')"><i class="fas fa-tractor"></i> Register as Farmer</button>
+        <a href="marketplace.html" class="btn btn-outline-white"><i class="fas fa-shopping-bag"></i> Browse as Buyer</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><span class="logo-text">PINNACLE</span></a>
+        <p>East Africa's most trusted livestock marketplace — connecting farmers and buyers for a thriving agricultural economy.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a>
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Marketplace</h4>
+        <ul>
+          <li><a href="marketplace.html?type=cattle">Browse Cattle</a></li>
+          <li><a href="marketplace.html?type=goats">Browse Goats</a></li>
+          <li><a href="marketplace.html?type=sheep">Browse Sheep</a></li>
+          <li><a href="marketplace.html?type=poultry">Browse Poultry</a></li>
+          <li><a href="marketplace.html">All Listings</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About Pinnacle</a></li>
+          <li><a href="about.html#team">Our Team</a></li>
+          <li><a href="contact.html">Contact Us</a></li>
+          <li><a href="contact.html#faq">FAQs</a></li>
+          <li><a href="#">Careers</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Contact</h4>
+        <ul class="contact-list">
+          <li><i class="fas fa-phone"></i><span>+254 700 123 456</span></li>
+          <li><i class="fas fa-envelope"></i><span>support@pinnacle.co.ke</span></li>
+          <li><i class="fas fa-map-marker-alt"></i><span>Westlands, Nairobi, Kenya</span></li>
+          <li><i class="fas fa-clock"></i><span>Mon–Sat: 7am – 7pm</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 Pinnacle Livestock Marketplace. All rights reserved.</p>
+      <div class="footer-links">
+        <a href="#">Privacy Policy</a><a href="#">Terms of Service</a><a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ===== REGISTER / LOGIN MODAL ===== -->
+<div class="modal-overlay" id="register-modal" onclick="closeModalOutside(event, 'register-modal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('register-modal')"><i class="fas fa-times"></i></button>
+    <div class="modal-header">
+      <img src="https://img.icons8.com/color/48/cow.png" alt=""/>
+      <h2 id="authModalTitle">Join Pinnacle</h2>
+      <p id="authModalSub">Start selling your livestock to thousands of buyers today</p>
+    </div>
+
+    <!-- Auth mode switcher: Register | Login -->
+    <div class="auth-mode-tabs">
+      <button class="auth-mode-btn active" onclick="switchAuthMode('register', this)">Register</button>
+      <button class="auth-mode-btn" onclick="switchAuthMode('login', this)">Login</button>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div id="authRegisterPanel">
+      <div class="modal-tabs">
+        <button class="tab-btn active" onclick="switchTab('farmer',this)">I'm a Farmer</button>
+        <button class="tab-btn" onclick="switchTab('buyer',this)">I'm a Buyer</button>
+      </div>
+      <form class="modal-form" id="registerForm">
+        <div class="form-row">
+          <input type="text" name="full_name" placeholder="Full Name" required/>
+          <input type="tel" name="phone" placeholder="Phone Number" required/>
+        </div>
+        <input type="email" name="email" placeholder="Email Address" required/>
+        <div class="farmer-fields" id="farmerFields">
+          <input type="text" name="farm_name" placeholder="Farm Name"/>
+          <select name="livestock_type">
+            <option value="">Main Livestock Type</option>
+            <option>Cattle</option><option>Goats</option><option>Sheep</option><option>Poultry</option><option>Pigs</option>
+          </select>
+        </div>
+        <input type="hidden" name="role" id="registerRole" value="farmer"/>
+        <input type="password" name="password" placeholder="Create Password" required/>
+        <button type="submit" class="btn btn-primary btn-full">Create Account <i class="fas fa-arrow-right"></i></button>
+        <p class="form-note">Already have an account? <a href="#" onclick="event.preventDefault();switchAuthMode('login',null)">Sign in</a></p>
+      </form>
+    </div>
+
+    <!-- LOGIN PANEL -->
+    <div id="authLoginPanel" style="display:none">
+      <form class="modal-form" id="loginForm">
+        <input type="email" name="login_email" placeholder="Email Address" required/>
+        <input type="password" name="login_password" placeholder="Password" required/>
+        <button type="submit" class="btn btn-primary btn-full">Sign In <i class="fas fa-sign-in-alt"></i></button>
+        <p class="form-note">Don't have an account? <a href="#" onclick="event.preventDefault();switchAuthMode('register',null)">Register free</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ===== UPGRADE PAYMENT MODAL ===== -->
+<div class="modal-overlay upgrade-modal" id="upgrade-modal" onclick="closeModalOutside(event, 'upgrade-modal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('upgrade-modal')"><i class="fas fa-times"></i></button>
+    <div class="modal-header">
+      <i class="fas fa-crown" style="font-size:2rem;color:var(--gold);margin-bottom:8px"></i>
+      <h2>Upgrade Your Plan</h2>
+      <p>Unlock powerful features for your farming business</p>
+    </div>
+    <!-- Plan Summary -->
+    <div class="upgrade-plan-summary">
+      <div>
+        <div class="plan-sum-name" id="upgradePlanName">Pro Farmer</div>
+        <div class="plan-sum-period" id="upgradePlanPeriod">/month</div>
+      </div>
+      <div class="plan-sum-price" id="upgradePlanPrice">KSh 1,999</div>
+    </div>
+    <!-- Payment Methods -->
+    <p style="font-size:.82rem;font-weight:600;color:var(--gray-600);text-transform:uppercase;letter-spacing:.4px;margin-bottom:10px">Payment Method</p>
+    <div class="payment-methods">
+      <button class="pay-method-btn selected" onclick="selectPayMethod(this,'mpesa')">
+        <i class="fas fa-mobile-alt"></i> M-Pesa
+      </button>
+      <button class="pay-method-btn" onclick="selectPayMethod(this,'card')">
+        <i class="fas fa-credit-card"></i> Card
+      </button>
+      <button class="pay-method-btn" onclick="selectPayMethod(this,'bank')">
+        <i class="fas fa-university"></i> Bank Transfer
+      </button>
+    </div>
+    <form class="upgrade-form" id="upgradeForm" onsubmit="handleUpgradePayment(event)">
+      <div id="mpesaField">
+        <input type="tel" placeholder="M-Pesa Phone Number (e.g. 0712 345 678)" required/>
+      </div>
+      <div id="cardFields" style="display:none">
+        <input type="text" placeholder="Cardholder Name"/>
+        <input type="text" placeholder="Card Number (16 digits)" maxlength="19"/>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <input type="text" placeholder="MM/YY"/>
+          <input type="text" placeholder="CVV"/>
+        </div>
+      </div>
+      <button type="submit" class="btn-upgrade-pay">
+        <i class="fas fa-lock"></i> Confirm & Pay
+      </button>
+    </form>
+    <p class="secure-note"><i class="fas fa-shield-alt"></i> 256-bit SSL encrypted. Your payment is 100% secure.</p>
+  </div>
+</div>
+
+<!-- ===== BACK TO TOP ===== -->
+<button class="back-to-top" id="backToTop" onclick="scrollToTop()"><i class="fas fa-chevron-up"></i></button>
+
+<!-- ===== LIVE ACTIVITY FEED ===== -->
+<div id="activityFeed" class="activity-feed"></div>
+
+<!-- ===== FLOATING SHARE BUTTON (FAB) ===== -->
+<div class="fab-wrap">
+  <div id="fabOptions" class="fab-options">
+    <button class="fab-opt" onclick="sharePlatform('whatsapp')">
+      <span class="fab-opt-icon wa"><i class="fab fa-whatsapp"></i></span> Share on WhatsApp
+    </button>
+    <button class="fab-opt" onclick="sharePlatform('facebook')">
+      <span class="fab-opt-icon fb"><i class="fab fa-facebook"></i></span> Share on Facebook
+    </button>
+    <button class="fab-opt" onclick="sharePlatform('twitter')">
+      <span class="fab-opt-icon tw"><i class="fab fa-twitter"></i></span> Share on Twitter
+    </button>
+    <button class="fab-opt" onclick="sharePlatform('copy')">
+      <span class="fab-opt-icon cp"><i class="fas fa-link"></i></span> Copy Link
+    </button>
+  </div>
+  <button class="fab-main" onclick="toggleFab()" title="Share Pinnacle">
+    <i class="fas fa-share-alt"></i>
+  </button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+

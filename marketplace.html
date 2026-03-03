@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marketplace — Pinnacle Livestock</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="https://img.icons8.com/color/48/cow.png" alt="Pinnacle Logo" class="logo-icon"/>
+      <span class="logo-text">PINNACLE</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="marketplace.html" class="active">Marketplace</a></li>
+      <li><a href="about.html">About Us</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="premium.html" class="nav-premium"><i class="fas fa-star"></i> Premium</a></li>
+      <li><a href="index.html#how-it-works">How It Works</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="marketplace.html" class="btn btn-outline">Browse Livestock</a>
+      <a href="#" class="btn btn-primary" onclick="openModal('register-modal')">List Your Farm</a>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container">
+    <h1><i class="fas fa-store"></i> Livestock Marketplace</h1>
+    <p>Browse thousands of verified listings from trusted farmers across the country</p>
+    <div class="hero-search" style="margin-top:28px">
+      <div class="search-bar" style="max-width:620px;margin:0 auto">
+        <i class="fas fa-search"></i>
+        <input type="text" id="marketSearch" placeholder="Search livestock by name, type, or location..."/>
+        <select id="typeFilter">
+          <option value="">All Types</option>
+          <option>Cattle</option><option>Goats</option><option>Sheep</option>
+          <option>Poultry</option><option>Pigs</option><option>Rabbits</option>
+        </select>
+        <button class="btn btn-primary" onclick="filterMarketplace()">Search</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARKETPLACE LAYOUT -->
+<div class="container">
+  <div class="marketplace-layout">
+
+    <!-- FILTER SIDEBAR -->
+    <aside class="filter-sidebar">
+      <h3><i class="fas fa-sliders-h"></i> Filter Listings</h3>
+
+      <div class="filter-group">
+        <label>Livestock Type</label>
+        <select id="sideTypeFilter" onchange="filterMarketplace()">
+          <option value="">All Types</option>
+          <option>Cattle</option><option>Goats</option><option>Sheep</option>
+          <option>Poultry</option><option>Pigs</option><option>Rabbits</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Location / County</label>
+        <select onchange="filterMarketplace()">
+          <option value="">All Regions</option>
+          <option>Nairobi</option><option>Nakuru</option><option>Eldoret</option>
+          <option>Mombasa</option><option>Kisumu</option><option>Meru</option>
+          <option>Kiambu</option><option>Thika</option><option>Narok</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label>Price Range (KSh)</label>
+        <div style="display:flex;gap:10px;margin-bottom:10px">
+          <input type="number" placeholder="Min" style="flex:1;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.85rem;outline:none"/>
+          <input type="number" placeholder="Max" style="flex:1;padding:9px 12px;border:1.5px solid var(--gray-200);border-radius:8px;font-size:.85rem;outline:none"/>
+        </div>
+        <input type="range" min="0" max="500000" value="500000"/>
+      </div>
+
+      <div class="filter-group">
+        <label>Seller Verification</label>
+        <div class="checkbox-list">
+          <label><input type="checkbox" checked/> Verified Sellers Only</label>
+          <label><input type="checkbox"/> 5-Star Rated</label>
+          <label><input type="checkbox"/> Recently Active</label>
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label>Animal Age</label>
+        <div class="checkbox-list">
+          <label><input type="checkbox"/> Young (under 6 months)</label>
+          <label><input type="checkbox"/> Juvenile (6–18 months)</label>
+          <label><input type="checkbox"/> Adult (18 months+)</label>
+          <label><input type="checkbox"/> Breeding Age</label>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="filterMarketplace()"><i class="fas fa-filter"></i> Apply Filters</button>
+      <button class="btn btn-outline btn-full" style="margin-top:10px" onclick="resetFilters()"><i class="fas fa-undo"></i> Reset Filters</button>
+    </aside>
+
+    <!-- LISTINGS MAIN -->
+    <main class="marketplace-main">
+      <div class="marketplace-toolbar">
+        <span class="result-count" id="resultCount">Loading listings...</span>
+        <select class="sort-select" id="sortFilter" onchange="filterMarketplace()">
+          <option value="">Sort: Newest First</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+        </select>
+      </div>
+      <div class="listings-grid" id="marketplaceGrid">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="text-center mt-40">
+        <button class="btn btn-outline btn-lg" onclick="showToast('Loading more listings...')"><i class="fas fa-plus-circle"></i> Load More Listings</button>
+      </div>
+    </main>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><span class="logo-text">PINNACLE</span></a>
+        <p>Kenya's most trusted livestock marketplace — connecting farmers and buyers for a thriving agricultural economy.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-whatsapp"></i></a><a href="#"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+      <div class="footer-col"><h4>Marketplace</h4><ul><li><a href="marketplace.html">All Listings</a></li><li><a href="marketplace.html?type=cattle">Cattle</a></li><li><a href="marketplace.html?type=goats">Goats</a></li><li><a href="marketplace.html?type=poultry">Poultry</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html#faq">FAQs</a></li></ul></div>
+      <div class="footer-col"><h4>Contact</h4><ul class="contact-list"><li><i class="fas fa-phone"></i><span>+254 700 123 456</span></li><li><i class="fas fa-envelope"></i><span>support@pinnacle.co.ke</span></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 Pinnacle Livestock Marketplace. All rights reserved.</p></div>
+  </div>
+</footer>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="register-modal" onclick="closeModalOutside(event,'register-modal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('register-modal')"><i class="fas fa-times"></i></button>
+    <div class="modal-header"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><h2>Join Pinnacle</h2><p>List your livestock and reach thousands of buyers</p></div>
+    <div class="modal-tabs"><button class="tab-btn active" onclick="switchTab('farmer')">I'm a Farmer</button><button class="tab-btn" onclick="switchTab('buyer')">I'm a Buyer</button></div>
+    <form class="modal-form" onsubmit="handleRegister(event)">
+      <div class="form-row"><input type="text" placeholder="Full Name" required/><input type="tel" placeholder="Phone Number" required/></div>
+      <input type="email" placeholder="Email Address" required/>
+      <input type="text" placeholder="County / Region" required/>
+      <div id="farmerFields" style="display:flex;flex-direction:column;gap:14px"><input type="text" placeholder="Farm Name"/><select><option>Main Livestock Type</option><option>Cattle</option><option>Goats</option><option>Sheep</option><option>Poultry</option></select></div>
+      <input type="password" placeholder="Create Password" required/>
+      <button type="submit" class="btn btn-primary btn-full">Create Account <i class="fas fa-arrow-right"></i></button>
+    </form>
+  </div>
+</div>
+
+<button class="back-to-top" id="backToTop" onclick="scrollToTop()"><i class="fas fa-chevron-up"></i></button>
+<script src="script.js"></script>
+</body>
+</html>
+

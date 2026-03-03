@@ -1,0 +1,26 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# Environment secrets — never commit these
+backend/.env
+
+# SQLite database (regenerated on first run)
+backend/*.db
+backend/*.db-shm
+backend/*.db-wal
+
+# Uploads folder contents (keep the folder itself)
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors
+.vscode/
+.idea/
+*.swp
+

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About Us — Pinnacle Livestock</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <a href="index.html" class="nav-logo">
+      <img src="https://img.icons8.com/color/48/cow.png" alt="Pinnacle Logo" class="logo-icon"/>
+      <span class="logo-text">PINNACLE</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="marketplace.html">Marketplace</a></li>
+      <li><a href="about.html" class="active">About Us</a></li>
+      <li><a href="contact.html">Contact</a></li>
+      <li><a href="premium.html" class="nav-premium"><i class="fas fa-star"></i> Premium</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="marketplace.html" class="btn btn-outline">Browse Livestock</a>
+      <a href="#" class="btn btn-primary" onclick="openModal('register-modal')">List Your Farm</a>
+    </div>
+    <button class="hamburger" id="hamburger" onclick="toggleNav()">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container">
+    <h1><i class="fas fa-leaf"></i> About Pinnacle</h1>
+    <p>Built by farmers, for farmers — we're on a mission to transform livestock trade in Africa</p>
+  </div>
+</section>
+
+<!-- MISSION SECTION -->
+<div class="container">
+  <div class="about-mission">
+    <div>
+      <span class="section-badge">Our Story</span>
+      <h2 style="font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,2.6rem);margin:14px 0">From a Small Farm to a <span class="highlight">National Platform</span></h2>
+      <p style="color:var(--gray-600);line-height:1.8;margin-bottom:18px">Pinnacle was founded in 2019 by a group of farmers from Kenya and Uganda who were tired of fraudlences from middlemen and lack of transparency in livestock sales. What started as a WhatsApp group connecting local farmers evolved into Kenya's largest dedicated livestock marketplace.</p>
+      <p style="color:var(--gray-600);line-height:1.8;margin-bottom:28px">Today, we connect over 4,800 verified farmers with thousands of buyers — from individual households to large meat processors and dairy cooperatives — across all 47 counties in Kenya. Our platform is built on three pillars: <strong>Trust, Transparency, and Technology.</strong></p>
+      <div style="display:flex;gap:36px;flex-wrap:wrap">
+        <div style="text-align:center"><div style="font-size:2rem;font-weight:800;color:var(--green)">2019</div><div style="font-size:.85rem;color:var(--gray-600)">Founded</div></div>
+        <div style="text-align:center"><div style="font-size:2rem;font-weight:800;color:var(--green)">47</div><div style="font-size:.85rem;color:var(--gray-600)">Counties Covered</div></div>
+        <div style="text-align:center"><div style="font-size:2rem;font-weight:800;color:var(--green)">4,800+</div><div style="font-size:.85rem;color:var(--gray-600)">Active Farmers</div></div>
+        <div style="text-align:center"><div style="font-size:2rem;font-weight:800;color:var(--green)">KSh 2B+</div><div style="font-size:.85rem;color:var(--gray-600)">Trade Facilitated</div></div>
+      </div>
+    </div>
+    <img src="https://images.unsplash.com/photo-1500595046743-cd271d694d30?w=600&h=400&fit=crop" alt="Farm" style="border-radius:20px;box-shadow:0 10px 40px rgba(0,0,0,.18);width:100%;height:420px;object-fit:cover"/>
+  </div>
+</div>
+
+<!-- VALUES SECTION -->
+<section class="about-values section-pad" id="values">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">What Drives Us</span>
+      <h2>Our Core <span class="highlight">Values</span></h2>
+      <p>Everything we build and every decision we make is guided by these principles</p>
+    </div>
+    <div class="values-grid">
+      <div class="value-card">
+        <div class="value-icon green"><i class="fas fa-shield-alt"></i></div>
+        <h3>Trust & Safety</h3>
+        <p>Every seller is verified. Every listing is reviewed. Buyers can buy with confidence knowing we stand behind every transaction.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon amber"><i class="fas fa-handshake"></i></div>
+        <h3>Fair Trade</h3>
+        <p>We cut out the middlemen so farmers get fair prices for their livestock and buyers get competitive market rates.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon blue"><i class="fas fa-mobile-alt"></i></div>
+        <h3>Accessible Technology</h3>
+        <p>Our platform works on any device, even low-bandwidth connections — because every farmer deserves digital access.</p>
+      </div>
+      <div class="value-card">
+        <div class="value-icon red"><i class="fas fa-heart"></i></div>
+        <h3>Community First</h3>
+        <p>We reinvest in farming communities through education programs, vet services partnerships, and farmer training.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TEAM SECTION -->
+<section class="section-pad" id="team" style="background:var(--white)">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-badge">Meet the Team</span>
+      <h2>The People Behind <span class="highlight">Pinnacle</span></h2>
+      <p>A passionate team of farmers, technologists, and business experts working for your success</p>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=300&h=220&fit=crop&crop=face" alt="CEO"/>
+        <div class="team-card-body">
+          <h3>Daniel Kariuki</h3>
+          <p class="role">Founder & CEO</p>
+          <p>Former dairy farmer turned entrepreneur. Daniel built Pinnacle to solve the problems he faced selling cattle in Nakuru.</p>
+          <div class="team-social"><a href="#"><i class="fab fa-linkedin"></i></a><a href="#"><i class="fab fa-twitter"></i></a></div>
+        </div>
+      </div>
+      <div class="team-card">
+        <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=300&h=220&fit=crop&crop=face" alt="CSM"/>
+        <div class="team-card-body">
+          <h3>Grace Achieng</h3>
+          <p class="role">Head of Customer Relations</p>
+          <p>8+ years in agri-trade facilitation. Grace ensures every customer feels heard, supported, and valued on Pinnacle.</p>
+          <div class="team-social"><a href="#"><i class="fab fa-linkedin"></i></a><a href="contact.html"><i class="fas fa-envelope"></i></a></div>
+        </div>
+      </div>
+      <div class="team-card">
+        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=220&fit=crop&crop=face" alt="CTO"/>
+        <div class="team-card-body">
+          <h3>Brian Odhiambo</h3>
+          <p class="role">Chief Technology Officer</p>
+          <p>Built Pinnacle's platform from the ground up. Brian ensures the marketplace is fast, secure, and accessible to all.</p>
+          <div class="team-social"><a href="#"><i class="fab fa-linkedin"></i></a><a href="#"><i class="fab fa-github"></i></a></div>
+        </div>
+      </div>
+      <div class="team-card">
+        <img src="https://images.unsplash.com/photo-1598550874175-4d0ef436c909?w=300&h=220&fit=crop&crop=face" alt="COO"/>
+        <div class="team-card-body">
+          <h3>Amina Waweru</h3>
+          <p class="role">Operations Manager</p>
+          <p>Former USAID agricultural consultant. Amina oversees farmer onboarding, verification, and regional partnerships.</p>
+          <div class="team-social"><a href="#"><i class="fab fa-linkedin"></i></a><a href="#"><i class="fab fa-twitter"></i></a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<section class="cta-banner">
+  <div class="container">
+    <div class="cta-content">
+      <div><h2>Ready to Be Part of the Pinnacle Community?</h2><p>Join thousands of farmers and buyers already thriving on our platform.</p></div>
+      <div class="cta-buttons">
+        <button class="btn btn-white" onclick="openModal('register-modal')"><i class="fas fa-tractor"></i> Register as Farmer</button>
+        <a href="marketplace.html" class="btn btn-outline-white"><i class="fas fa-shopping-bag"></i> Browse as Buyer</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="index.html" class="nav-logo"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><span class="logo-text">PINNACLE</span></a>
+        <p>Kenya's most trusted livestock marketplace.</p>
+        <div class="social-links"><a href="#"><i class="fab fa-facebook"></i></a><a href="#"><i class="fab fa-twitter"></i></a><a href="#"><i class="fab fa-whatsapp"></i></a><a href="#"><i class="fab fa-instagram"></i></a></div>
+      </div>
+      <div class="footer-col"><h4>Marketplace</h4><ul><li><a href="marketplace.html">All Listings</a></li><li><a href="marketplace.html?type=cattle">Cattle</a></li><li><a href="marketplace.html?type=goats">Goats</a></li></ul></div>
+      <div class="footer-col"><h4>Company</h4><ul><li><a href="about.html">About Us</a></li><li><a href="contact.html">Contact</a></li><li><a href="contact.html#faq">FAQs</a></li></ul></div>
+      <div class="footer-col"><h4>Contact</h4><ul class="contact-list"><li><i class="fas fa-phone"></i><span>+254 700 123 456</span></li><li><i class="fas fa-envelope"></i><span>support@pinnacle.co.ke</span></li></ul></div>
+    </div>
+    <div class="footer-bottom"><p>© 2025 Pinnacle Livestock Marketplace. All rights reserved.</p></div>
+  </div>
+</footer>
+
+<!-- REGISTER MODAL -->
+<div class="modal-overlay" id="register-modal" onclick="closeModalOutside(event,'register-modal')">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal('register-modal')"><i class="fas fa-times"></i></button>
+    <div class="modal-header"><img src="https://img.icons8.com/color/48/cow.png" alt=""/><h2>Join Pinnacle</h2><p>Start selling or buying livestock today</p></div>
+    <div class="modal-tabs"><button class="tab-btn active" onclick="switchTab('farmer')">I'm a Farmer</button><button class="tab-btn" onclick="switchTab('buyer')">I'm a Buyer</button></div>
+    <form class="modal-form" onsubmit="handleRegister(event)">
+      <div class="form-row"><input type="text" placeholder="Full Name" required/><input type="tel" placeholder="Phone Number" required/></div>
+      <input type="email" placeholder="Email Address" required/>
+      <input type="text" placeholder="County / Region" required/>
+      <div id="farmerFields" style="display:flex;flex-direction:column;gap:14px"><input type="text" placeholder="Farm Name"/><select><option>Main Livestock Type</option><option>Cattle</option><option>Goats</option><option>Sheep</option></select></div>
+      <input type="password" placeholder="Create Password" required/>
+      <button type="submit" class="btn btn-primary btn-full">Create Account <i class="fas fa-arrow-right"></i></button>
+    </form>
+  </div>
+</div>
+
+<button class="back-to-top" id="backToTop" onclick="scrollToTop()"><i class="fas fa-chevron-up"></i></button>
+<script src="script.js"></script>
+</body>
+</html>
+
