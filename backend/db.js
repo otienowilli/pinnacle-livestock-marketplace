@@ -94,15 +94,15 @@ db.exec(`
 // ─── Seed Admin Account ───────────────────────────────────────────────────────
 const bcrypt = require('bcryptjs');
 
-const existingAdmin = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
-if (!existingAdmin) {
-  const adminHash = bcrypt.hashSync('Pinnacle@Admin2026', 10);
-  db.prepare(`
-    INSERT INTO users (email, password_hash, full_name, phone, role, referral_code)
-    VALUES (?, ?, ?, ?, 'admin', ?)
-  `).run('admin@pinnacle.co.ke', adminHash, 'Pinnacle Admin', '+254741101607', 'REF-ADMIN001');
-  console.log('✅ Admin account seeded: admin@pinnacle.co.ke / Pinnacle@Admin2026');
-}
+// Always ensure admin account exists (INSERT OR IGNORE so it won't fail on re-deploy)
+const adminHash = bcrypt.hashSync('Pinnacle@Admin2026', 10);
+db.prepare(`
+  INSERT OR IGNORE INTO users (email, password_hash, full_name, phone, role, referral_code)
+  VALUES ('admin@pinnacle.co.ke', ?, 'Pinnacle Admin', '+254741101607', 'admin', 'REF-ADMIN001')
+`).run(adminHash);
+// Always force role=admin in case it was changed
+db.prepare("UPDATE users SET role='admin' WHERE email='admin@pinnacle.co.ke'").run();
+console.log('✅ Admin account ready: admin@pinnacle.co.ke / Pinnacle@Admin2026');
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────
 
