@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pinnacle Admin Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --green: #2e7d32; --green-light: #e8f5e9; --green-dark: #1b5e20;
+      --red: #c62828; --red-light: #ffebee;
+      --amber: #e65100; --amber-light: #fff3e0;
+      --blue: #1565c0; --blue-light: #e3f2fd;
+      --gray-50: #fafafa; --gray-100: #f5f5f5; --gray-200: #eee;
+      --gray-400: #bdbdbd; --gray-600: #757575; --gray-800: #424242;
+      --white: #fff; --shadow: 0 2px 12px rgba(0,0,0,.1);
+      --radius: 12px; --transition: .2s ease;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: var(--gray-100); color: var(--gray-800); }
+
+    /* ── Login Screen ── */
+    #login-screen {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--green-dark), var(--green));
+    }
+    .login-card {
+      background: var(--white); border-radius: var(--radius); padding: 48px 40px;
+      width: 100%; max-width: 420px; box-shadow: 0 20px 60px rgba(0,0,0,.2);
+    }
+    .login-card .logo { display: flex; align-items: center; gap: 12px; margin-bottom: 32px; justify-content: center; }
+    .login-card .logo img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; }
+    .login-card .logo span { font-size: 1.6rem; font-weight: 800; color: var(--green-dark); }
+    .login-card h2 { text-align: center; margin-bottom: 8px; font-size: 1.3rem; color: var(--gray-800); }
+    .login-card p { text-align: center; color: var(--gray-600); font-size: .9rem; margin-bottom: 28px; }
+    .form-group { margin-bottom: 18px; }
+    .form-group label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 6px; color: var(--gray-800); }
+    .form-group input {
+      width: 100%; padding: 12px 16px; border: 2px solid var(--gray-200);
+      border-radius: 8px; font-size: .95rem; transition: var(--transition);
+    }
+    .form-group input:focus { outline: none; border-color: var(--green); }
+    .btn-login {
+      width: 100%; padding: 14px; background: var(--green); color: var(--white);
+      border: none; border-radius: 8px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; transition: var(--transition);
+    }
+    .btn-login:hover { background: var(--green-dark); }
+    #login-error { color: var(--red); font-size: .85rem; text-align: center; margin-top: 12px; display: none; }
+
+    /* ── Admin Shell ── */
+    #admin-shell { display: none; min-height: 100vh; }
+    .sidebar {
+      position: fixed; top: 0; left: 0; width: 240px; height: 100vh;
+      background: var(--green-dark); color: var(--white); display: flex;
+      flex-direction: column; z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 24px 20px; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.15);
+    }
+    .sidebar-logo img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
+    .sidebar-logo span { font-weight: 800; font-size: 1.1rem; letter-spacing: 1px; }
+    .sidebar-badge { font-size: .65rem; background: var(--amber); padding: 2px 8px; border-radius: 20px; margin-left: 4px; }
+    .sidebar nav { flex: 1; padding: 16px 0; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px; padding: 13px 20px;
+      cursor: pointer; transition: var(--transition); font-size: .95rem; color: rgba(255,255,255,.8);
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,.1); color: var(--white); }
+    .nav-item.active { background: rgba(255,255,255,.15); color: var(--white); border-left-color: #a5d6a7; }
+    .nav-item i { width: 20px; text-align: center; }
+    .sidebar-footer { padding: 16px 20px; border-top: 1px solid rgba(255,255,255,.15); }
+    .admin-info { font-size: .8rem; color: rgba(255,255,255,.7); margin-bottom: 10px; }
+    .btn-logout {
+      width: 100%; padding: 10px; background: rgba(255,255,255,.1); color: var(--white);
+      border: 1px solid rgba(255,255,255,.2); border-radius: 8px; cursor: pointer;
+      font-size: .9rem; transition: var(--transition);
+    }
+    .btn-logout:hover { background: var(--red); border-color: var(--red); }
+
+    /* ── Main Content ── */
+    .main { margin-left: 240px; min-height: 100vh; }
+    .topbar {
+      background: var(--white); padding: 16px 28px; display: flex;
+      align-items: center; justify-content: space-between;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08); position: sticky; top: 0; z-index: 50;
+    }
+    .topbar h1 { font-size: 1.3rem; font-weight: 700; color: var(--gray-800); }
+    .topbar-time { font-size: .85rem; color: var(--gray-600); }
+    .content { padding: 28px; }
+
+    /* ── Sections ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── Stats Grid ── */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .stat-card {
+      background: var(--white); border-radius: var(--radius); padding: 22px 20px;
+      box-shadow: var(--shadow); display: flex; align-items: center; gap: 16px;
+    }
+    .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .stat-icon.green { background: var(--green-light); color: var(--green); }
+    .stat-icon.blue  { background: var(--blue-light);  color: var(--blue); }
+    .stat-icon.amber { background: var(--amber-light); color: var(--amber); }
+    .stat-icon.red   { background: var(--red-light);   color: var(--red); }
+    .stat-info .num { font-size: 1.8rem; font-weight: 800; color: var(--gray-800); }
+    .stat-info .label { font-size: .8rem; color: var(--gray-600); margin-top: 2px; }
+
+    /* ── Table ── */
+    .card { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; margin-bottom: 24px; }
+    .card-header { padding: 18px 22px; border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; }
+    .card-header h3 { font-size: 1rem; font-weight: 700; }
+    .card-header span { font-size: .8rem; color: var(--gray-600); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    thead tr { background: var(--gray-50); }
+    th { padding: 11px 16px; text-align: left; font-weight: 600; color: var(--gray-600); font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+    td { padding: 12px 16px; border-top: 1px solid var(--gray-100); vertical-align: middle; }
+    tr:hover td { background: var(--gray-50); }
+    .badge {
+      display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: .75rem; font-weight: 600;
+    }
+    .badge.active, .badge.completed  { background: var(--green-light); color: var(--green); }
+    .badge.pending  { background: var(--amber-light); color: var(--amber); }
+    .badge.sold, .badge.ended, .badge.expired, .badge.cancelled { background: var(--gray-100); color: var(--gray-600); }
+    .badge.admin    { background: var(--red-light); color: var(--red); }
+    .badge.pro      { background: var(--blue-light); color: var(--blue); }
+    .badge.enterprise { background: #f3e5f5; color: #6a1b9a; }
+    .badge.free     { background: var(--gray-100); color: var(--gray-600); }
+
+    /* ── Action Buttons ── */
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+    .btn-sm {
+      padding: 5px 12px; border-radius: 6px; font-size: .78rem; font-weight: 600;
+      cursor: pointer; border: none; transition: var(--transition);
+    }
+    .btn-sm.green { background: var(--green-light); color: var(--green); }
+    .btn-sm.green:hover { background: var(--green); color: var(--white); }
+    .btn-sm.red { background: var(--red-light); color: var(--red); }
+    .btn-sm.red:hover { background: var(--red); color: var(--white); }
+    .btn-sm.amber { background: var(--amber-light); color: var(--amber); }
+    .btn-sm.amber:hover { background: var(--amber); color: var(--white); }
+    .btn-sm.blue { background: var(--blue-light); color: var(--blue); }
+    .btn-sm.blue:hover { background: var(--blue); color: var(--white); }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; background: var(--gray-800);
+      color: var(--white); padding: 14px 22px; border-radius: 10px; font-size: .9rem;
+      z-index: 9999; display: none; box-shadow: var(--shadow); max-width: 320px;
+    }
+    #toast.success { background: var(--green); }
+    #toast.error   { background: var(--red); }
+
+    .loading { text-align: center; padding: 40px; color: var(--gray-600); }
+    .empty { text-align: center; padding: 40px; color: var(--gray-400); font-size: .9rem; }
+    .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--gray-800); }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    @media (max-width: 900px) {
+      .sidebar { width: 60px; }
+      .sidebar-logo span, .nav-item span, .admin-info, .sidebar-badge { display: none; }
+      .main { margin-left: 60px; }
+      .two-col { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════ LOGIN SCREEN ═══════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo">
+      <img src="Pinnacle loggo 1.jpg" alt="Pinnacle"/>
+      <span>PINNACLE</span>
+    </div>
+    <h2>Admin Panel</h2>
+    <p>Sign in with your administrator credentials</p>
+    <div class="form-group">
+      <label>Email Address</label>
+      <input type="email" id="admin-email" placeholder="admin@pinnacle.co.ke" autocomplete="username"/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="admin-password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="btn-login" onclick="adminLogin()"><i class="fas fa-shield-halved"></i> Sign In as Admin</button>
+    <div id="login-error">❌ Invalid credentials or not an admin account.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════ ADMIN SHELL ════════════════════════════ -->
+<div id="admin-shell">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="Pinnacle loggo 1.jpg" alt="logo"/>
+      <span>PINNACLE <span class="sidebar-badge">ADMIN</span></span>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="showSection('dashboard')">
+        <i class="fas fa-gauge-high"></i><span>Dashboard</span>
+      </div>
+      <div class="nav-item" onclick="showSection('users')">
+        <i class="fas fa-users"></i><span>Users</span>
+      </div>
+      <div class="nav-item" onclick="showSection('listings')">
+        <i class="fas fa-store"></i><span>Listings</span>
+      </div>
+      <div class="nav-item" onclick="showSection('auctions')">
+        <i class="fas fa-gavel"></i><span>Auctions</span>
+      </div>
+      <div class="nav-item" onclick="showSection('messages')">
+        <i class="fas fa-envelope"></i><span>Messages</span>
+      </div>
+      <div class="nav-item" onclick="showSection('subscriptions')">
+        <i class="fas fa-crown"></i><span>Subscriptions</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="admin-info" id="admin-name-display"></div>
+      <button class="btn-logout" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <div class="topbar">
+      <h1 id="section-title">Dashboard</h1>
+      <div class="topbar-time" id="topbar-time"></div>
+    </div>
+
+    <div class="content">
+
+      <!-- ── DASHBOARD ── -->
+      <div class="section active" id="section-dashboard">
+        <div class="stats-grid" id="stats-grid">
+          <div class="loading"><i class="fas fa-spinner fa-spin"></i> Loading stats…</div>
+        </div>
+        <div class="two-col">
+          <div class="card">
+            <div class="card-header"><h3><i class="fas fa-users"></i> Recent Users</h3></div>
+            <div class="table-wrap"><table id="dash-users-table"><tbody><tr><td class="loading">Loading…</td></tr></tbody></table></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><h3><i class="fas fa-envelope"></i> Recent Messages</h3></div>
+            <div class="table-wrap"><table id="dash-msgs-table"><tbody><tr><td class="loading">Loading…</td></tr></tbody></table></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── USERS ── -->
+      <div class="section" id="section-users">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-users"></i> All Users</h3>
+            <span id="users-count"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Plan</th><th>Joined</th><th>Actions</th></tr></thead>
+              <tbody id="users-tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LISTINGS ── -->
+      <div class="section" id="section-listings">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-store"></i> All Listings</h3>
+            <span id="listings-count"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Animal</th><th>Type</th><th>Price (KES)</th><th>Location</th><th>Seller</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="listings-tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── AUCTIONS ── -->
+      <div class="section" id="section-auctions">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-gavel"></i> All Auctions</h3>
+            <span id="auctions-count"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Listing</th><th>Type</th><th>Starting Bid</th><th>Current Bid</th><th>Bids</th><th>Ends At</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="auctions-tbody"><tr><td colspan="9" class="loading">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MESSAGES ── -->
+      <div class="section" id="section-messages">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-envelope"></i> Contact Messages</h3>
+            <span id="messages-count"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Subject</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
+              <tbody id="messages-tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SUBSCRIPTIONS ── -->
+      <div class="section" id="section-subscriptions">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-crown"></i> All Subscriptions</h3>
+            <span id="subs-count"></span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>User</th><th>Email</th><th>Plan</th><th>Billing</th><th>Amount (KES)</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
+              <tbody id="subs-tbody"><tr><td colspan="9" class="loading">Loading…</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /admin-shell -->
+
+<div id="toast"></div>
+
+<script>
+const API = '';
+let adminToken = localStorage.getItem('adminToken');
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = type; t.style.display = 'block';
+  setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+
+function fmt(n) { return Number(n || 0).toLocaleString(); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString('en-KE', { day:'2-digit', month:'short', year:'numeric' }) : '—'; }
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(API + path, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken, ...(options.headers || {}) }
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function adminLogin() {
+  const email = document.getElementById('admin-email').value.trim();
+  const pass  = document.getElementById('admin-password').value;
+  document.getElementById('login-error').style.display = 'none';
+  try {
+    const data = await apiFetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ email, password: pass }) });
+    if (data.user.role !== 'admin') throw new Error('Not an admin account');
+    adminToken = data.token;
+    localStorage.setItem('adminToken', adminToken);
+    localStorage.setItem('adminUser', JSON.stringify(data.user));
+    bootAdmin(data.user);
+  } catch (e) {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function bootAdmin(user) {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-shell').style.display = 'flex';
+  document.getElementById('admin-name-display').textContent = '👤 ' + user.full_name;
+  setInterval(() => {
+    document.getElementById('topbar-time').textContent = new Date().toLocaleString('en-KE');
+  }, 1000);
+  loadDashboard();
+}
+
+function adminLogout() {
+  localStorage.removeItem('adminToken'); localStorage.removeItem('adminUser');
+  location.reload();
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+const sectionTitles = { dashboard:'Dashboard', users:'Users', listings:'Listings', auctions:'Auctions', messages:'Contact Messages', subscriptions:'Subscriptions' };
+function showSection(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-' + name).classList.add('active');
+  document.querySelectorAll('.nav-item')[['dashboard','users','listings','auctions','messages','subscriptions'].indexOf(name)].classList.add('active');
+  document.getElementById('section-title').textContent = sectionTitles[name];
+  const loaders = { users: loadUsers, listings: loadListings, auctions: loadAuctions, messages: loadMessages, subscriptions: loadSubscriptions };
+  if (loaders[name]) loaders[name]();
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  try {
+    const s = await apiFetch('/api/admin/stats');
+    document.getElementById('stats-grid').innerHTML = `
+      <div class="stat-card"><div class="stat-icon green"><i class="fas fa-users"></i></div><div class="stat-info"><div class="num">${s.users.total}</div><div class="label">Total Users</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-store"></i></div><div class="stat-info"><div class="num">${s.listings.active}</div><div class="label">Active Listings</div></div></div>
+      <div class="stat-card"><div class="stat-icon amber"><i class="fas fa-gavel"></i></div><div class="stat-info"><div class="num">${s.auctions.active}</div><div class="label">Live Auctions</div></div></div>
+      <div class="stat-card"><div class="stat-icon red"><i class="fas fa-envelope"></i></div><div class="stat-info"><div class="num">${s.contacts.total}</div><div class="label">Messages</div></div></div>
+      <div class="stat-card"><div class="stat-icon green"><i class="fas fa-crown"></i></div><div class="stat-info"><div class="num">${s.subscriptions.pro + s.subscriptions.enterprise}</div><div class="label">Paid Members</div></div></div>
+      <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-hammer"></i></div><div class="stat-info"><div class="num">${s.auctions.totalBids}</div><div class="label">Total Bids</div></div></div>
+    `;
+    // Recent users mini-table
+    const users = await apiFetch('/api/admin/users');
+    document.getElementById('dash-users-table').innerHTML = users.slice(0,5).map(u => `
+      <tr><td><b>${u.full_name}</b><br><small style="color:#757575">${u.email}</small></td>
+      <td><span class="badge ${u.role}">${u.role}</span></td></tr>
+    `).join('') || '<tr><td class="empty">No users yet</td></tr>';
+
+    // Recent messages mini-table
+    const msgs = await apiFetch('/api/admin/contacts');
+    document.getElementById('dash-msgs-table').innerHTML = msgs.slice(0,5).map(m => `
+      <tr><td><b>${m.name}</b><br><small style="color:#757575">${m.subject || '—'}</small></td>
+      <td><small>${fmtDate(m.created_at)}</small></td></tr>
+    `).join('') || '<tr><td class="empty">No messages yet</td></tr>';
+  } catch(e) { toast('Failed to load dashboard: ' + e.message, 'error'); }
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+async function loadUsers() {
+  try {
+    const users = await apiFetch('/api/admin/users');
+    document.getElementById('users-count').textContent = users.length + ' total';
+    document.getElementById('users-tbody').innerHTML = users.map(u => `
+      <tr>
+        <td>${u.id}</td>
+        <td><b>${u.full_name}</b>${u.farm_name ? '<br><small>'+u.farm_name+'</small>':''}</td>
+        <td>${u.email}</td>
+        <td>${u.phone || '—'}</td>
+        <td><span class="badge ${u.role}">${u.role}</span></td>
+        <td><span class="badge ${u.subscription_plan || 'free'}">${u.subscription_plan || 'free'}</span></td>
+        <td>${fmtDate(u.created_at)}</td>
+        <td class="actions">
+          <button class="btn-sm blue" onclick="changeRole(${u.id},'farmer')">Farmer</button>
+          <button class="btn-sm green" onclick="changeRole(${u.id},'buyer')">Buyer</button>
+          <button class="btn-sm amber" onclick="changeRole(${u.id},'admin')">Admin</button>
+          <button class="btn-sm red" onclick="deleteUser(${u.id},'${u.full_name}')">Delete</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="8" class="empty">No users found</td></tr>';
+  } catch(e) { toast('Error loading users: ' + e.message, 'error'); }
+}
+
+async function changeRole(id, role) {
+  if (!confirm(`Change user #${id} role to "${role}"?`)) return;
+  try {
+    await apiFetch(`/api/admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
+    toast(`✅ Role updated to ${role}`); loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteUser(id, name) {
+  if (!confirm(`⚠️ Delete user "${name}" and all their data? This cannot be undone.`)) return;
+  try {
+    await apiFetch(`/api/admin/users/${id}`, { method: 'DELETE' });
+    toast('🗑️ User deleted'); loadUsers();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Listings ──────────────────────────────────────────────────────────────────
+async function loadListings() {
+  try {
+    const listings = await apiFetch('/api/admin/listings');
+    document.getElementById('listings-count').textContent = listings.length + ' total';
+    document.getElementById('listings-tbody').innerHTML = listings.map(l => `
+      <tr>
+        <td>${l.id}</td>
+        <td><b>${l.name}</b><br><small>${l.breed || ''} ${l.age ? '· '+l.age : ''}</small></td>
+        <td>${l.type}</td>
+        <td>KES ${fmt(l.price)}</td>
+        <td>${l.location}</td>
+        <td>${l.seller_name || '—'}<br><small>${l.seller_email || ''}</small></td>
+        <td><span class="badge ${l.status}">${l.status}</span></td>
+        <td class="actions">
+          <button class="btn-sm green" onclick="setListingStatus(${l.id},'active')">Activate</button>
+          <button class="btn-sm amber" onclick="setListingStatus(${l.id},'pending')">Pending</button>
+          <button class="btn-sm blue" onclick="setListingStatus(${l.id},'sold')">Mark Sold</button>
+          <button class="btn-sm red" onclick="deleteListing(${l.id})">Delete</button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="8" class="empty">No listings found</td></tr>';
+  } catch(e) { toast('Error loading listings: ' + e.message, 'error'); }
+}
+
+async function setListingStatus(id, status) {
+  try {
+    await apiFetch(`/api/admin/listings/${id}/status`, { method: 'PUT', body: JSON.stringify({ status }) });
+    toast(`✅ Listing marked as ${status}`); loadListings();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function deleteListing(id) {
+  if (!confirm('Delete this listing? This cannot be undone.')) return;
+  try {
+    await apiFetch(`/api/admin/listings/${id}`, { method: 'DELETE' });
+    toast('🗑️ Listing deleted'); loadListings();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Auctions ──────────────────────────────────────────────────────────────────
+async function loadAuctions() {
+  try {
+    const auctions = await apiFetch('/api/admin/auctions');
+    document.getElementById('auctions-count').textContent = auctions.length + ' total';
+    document.getElementById('auctions-tbody').innerHTML = auctions.map(a => `
+      <tr>
+        <td>${a.id}</td>
+        <td>${a.listing_name || '—'}</td>
+        <td>${a.listing_type || '—'}</td>
+        <td>KES ${fmt(a.starting_bid)}</td>
+        <td>KES ${fmt(a.current_bid)}</td>
+        <td>${a.bid_count}</td>
+        <td>${fmtDate(a.ends_at)}</td>
+        <td><span class="badge ${a.status}">${a.status}</span></td>
+        <td class="actions">
+          ${a.status === 'active' ? `<button class="btn-sm red" onclick="closeAuction(${a.id})">Close Early</button>` : '<span style="color:#bdbdbd;font-size:.8rem">Closed</span>'}
+        </td>
+      </tr>`).join('') || '<tr><td colspan="9" class="empty">No auctions found</td></tr>';
+  } catch(e) { toast('Error loading auctions: ' + e.message, 'error'); }
+}
+
+async function closeAuction(id) {
+  if (!confirm('Close this auction early?')) return;
+  try {
+    await apiFetch(`/api/admin/auctions/${id}/close`, { method: 'PUT' });
+    toast('✅ Auction closed'); loadAuctions();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+async function loadMessages() {
+  try {
+    const msgs = await apiFetch('/api/admin/contacts');
+    document.getElementById('messages-count').textContent = msgs.length + ' messages';
+    document.getElementById('messages-tbody').innerHTML = msgs.map(m => `
+      <tr>
+        <td>${m.id}</td>
+        <td>${m.name}</td>
+        <td>${m.email}</td>
+        <td>${m.phone || '—'}</td>
+        <td>${m.subject || '—'}</td>
+        <td style="max-width:220px;white-space:normal">${m.message}</td>
+        <td>${fmtDate(m.created_at)}</td>
+        <td><button class="btn-sm red" onclick="deleteMessage(${m.id})">Delete</button></td>
+      </tr>`).join('') || '<tr><td colspan="8" class="empty">No messages yet</td></tr>';
+  } catch(e) { toast('Error loading messages: ' + e.message, 'error'); }
+}
+
+async function deleteMessage(id) {
+  if (!confirm('Delete this message?')) return;
+  try {
+    await apiFetch(`/api/admin/contacts/${id}`, { method: 'DELETE' });
+    toast('🗑️ Message deleted'); loadMessages();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ── Subscriptions ─────────────────────────────────────────────────────────────
+async function loadSubscriptions() {
+  try {
+    const subs = await apiFetch('/api/admin/subscriptions');
+    document.getElementById('subs-count').textContent = subs.length + ' total';
+    document.getElementById('subs-tbody').innerHTML = subs.map(s => `
+      <tr>
+        <td>${s.id}</td>
+        <td>${s.full_name || '—'}</td>
+        <td>${s.email || '—'}</td>
+        <td><span class="badge ${s.plan}">${s.plan}</span></td>
+        <td>${s.billing_period || '—'}</td>
+        <td>KES ${fmt(s.amount)}</td>
+        <td><span class="badge ${s.status}">${s.status}</span></td>
+        <td>${fmtDate(s.started_at)}</td>
+        <td>${fmtDate(s.expires_at)}</td>
+      </tr>`).join('') || '<tr><td colspan="9" class="empty">No subscriptions found</td></tr>';
+  } catch(e) { toast('Error loading subscriptions: ' + e.message, 'error'); }
+}
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', () => {
+  if (adminToken) {
+    const user = JSON.parse(localStorage.getItem('adminUser') || '{}');
+    if (user.role === 'admin') { bootAdmin(user); return; }
+  }
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('admin-password').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
+});
+</script>
+</body>
+</html>
+

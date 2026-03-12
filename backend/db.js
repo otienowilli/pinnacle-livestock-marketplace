@@ -91,6 +91,19 @@ db.exec(`
   );
 `);
 
+// ─── Seed Admin Account ───────────────────────────────────────────────────────
+const bcrypt = require('bcryptjs');
+
+const existingAdmin = db.prepare("SELECT id FROM users WHERE role = 'admin' LIMIT 1").get();
+if (!existingAdmin) {
+  const adminHash = bcrypt.hashSync('Pinnacle@Admin2026', 10);
+  db.prepare(`
+    INSERT INTO users (email, password_hash, full_name, phone, role, referral_code)
+    VALUES (?, ?, ?, ?, 'admin', ?)
+  `).run('admin@pinnacle.co.ke', adminHash, 'Pinnacle Admin', '+254741101607', 'REF-ADMIN001');
+  console.log('✅ Admin account seeded: admin@pinnacle.co.ke / Pinnacle@Admin2026');
+}
+
 // ─── Seed Data ────────────────────────────────────────────────────────────────
 
 const seedListings = [
@@ -118,7 +131,8 @@ if (existingListings.cnt === 0) {
   `);
   const bids = [{ start: 75000, cur: 92000, count: 14 }, { start: 10000, cur: 15500, count: 9 }, { start: 15000, cur: 21000, count: 6 }];
   listingRows.forEach((row, i) => {
-    const endsAt = new Date(Date.now() + (i + 1) * 3600000 * 24).toISOString();
+    // Each auction ends 7, 14, or 21 days from now — always in the future
+    const endsAt = new Date(Date.now() + (i + 1) * 7 * 24 * 3600000).toISOString();
     insertAuction.run(row.id, bids[i].start, bids[i].cur, bids[i].count, endsAt);
   });
 }

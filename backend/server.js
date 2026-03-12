@@ -20,9 +20,13 @@ app.use('/api/contact',       require('./routes/contact'));
 app.use('/api/subscriptions', require('./routes/subscriptions'));
 app.use('/api/auctions',      require('./routes/auctions'));
 app.use('/api/referrals',     require('./routes/referrals'));
+app.use('/api/admin',         require('./routes/admin'));
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', app: 'Pinnacle Livestock API', version: '1.0.0' }));
+
+// ─── Serve admin.html for /admin route ───────────────────────────────────────
+app.get('/admin', (_req, res) => res.sendFile(path.join(__dirname, '..', 'admin.html')));
 
 // ─── Serve index.html for any non-API route (SPA fallback) ────────────────────
 app.use((req, res, next) => {
