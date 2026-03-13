@@ -5,6 +5,7 @@ const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+const JWT_SECRET = process.env.JWT_SECRET || 'pinnacle-livestock-secret-2026-default';
 
 function genReferralCode() {
   return 'REF-' + Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -32,7 +33,7 @@ router.post('/register', (req, res) => {
 
   const token = jwt.sign(
     { id: result.lastInsertRowid, email, role: role || 'buyer', full_name },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     { expiresIn: '7d' }
   );
   res.status(201).json({ token, user: { id: result.lastInsertRowid, email, full_name, role: role || 'buyer', referral_code } });
@@ -50,7 +51,7 @@ router.post('/login', (req, res) => {
 
   const token = jwt.sign(
     { id: user.id, email: user.email, role: user.role, full_name: user.full_name },
-    process.env.JWT_SECRET,
+    JWT_SECRET,
     { expiresIn: '7d' }
   );
   res.json({ token, user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role, referral_code: user.referral_code } });
