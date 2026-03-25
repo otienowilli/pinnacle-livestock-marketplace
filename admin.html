@@ -159,6 +159,26 @@
     .empty { text-align: center; padding: 40px; color: var(--gray-400); font-size: .9rem; }
     .section-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 20px; color: var(--gray-800); }
     .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* ── Toolbar ── */
+    .toolbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 14px 22px; border-bottom: 1px solid var(--gray-200); }
+    .toolbar input[type=text] { flex: 1; min-width: 180px; padding: 8px 14px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: .88rem; transition: var(--transition); }
+    .toolbar input[type=text]:focus { outline: none; border-color: var(--green); }
+    .toolbar select { padding: 8px 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: .88rem; cursor: pointer; background: var(--white); }
+    .btn-seed { padding: 8px 18px; background: var(--green); color: var(--white); border: none; border-radius: 8px; font-size: .85rem; font-weight: 700; cursor: pointer; transition: var(--transition); }
+    .btn-seed:hover { background: var(--green-dark); }
+    .btn-seed:disabled { opacity: .6; cursor: not-allowed; }
+
+    /* ── Pagination ── */
+    .pagination { display: flex; gap: 6px; align-items: center; justify-content: center; padding: 16px; flex-wrap: wrap; }
+    .page-btn { padding: 6px 12px; border: 2px solid var(--gray-200); border-radius: 6px; background: var(--white); cursor: pointer; font-size: .82rem; font-weight: 600; transition: var(--transition); }
+    .page-btn:hover { border-color: var(--green); color: var(--green); }
+    .page-btn.active { background: var(--green); color: var(--white); border-color: var(--green); }
+    .page-info { font-size: .82rem; color: var(--gray-600); padding: 0 8px; }
+
+    /* ── Animal thumb ── */
+    .thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; display: inline-block; vertical-align: middle; margin-right: 8px; background: var(--gray-100); }
+
     @media (max-width: 900px) {
       .sidebar { width: 60px; }
       .sidebar-logo span, .nav-item span, .admin-info, .sidebar-badge { display: none; }
@@ -218,6 +238,9 @@
       <div class="nav-item" onclick="showSection('subscriptions')">
         <i class="fas fa-crown"></i><span>Subscriptions</span>
       </div>
+      <div class="nav-item" onclick="showSection('seeddata')">
+        <i class="fas fa-seedling"></i><span>Seed Data</span>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <div class="admin-info" id="admin-name-display"></div>
@@ -258,12 +281,20 @@
             <h3><i class="fas fa-users"></i> All Users</h3>
             <span id="users-count"></span>
           </div>
+          <div class="toolbar">
+            <input type="text" id="users-search" placeholder="🔍 Search by name or email…" oninput="filterAndRenderUsers()"/>
+            <select id="users-filter-role" onchange="filterAndRenderUsers()">
+              <option value="">All Roles</option>
+              <option>admin</option><option>farmer</option><option>buyer</option>
+            </select>
+          </div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Role</th><th>Plan</th><th>Joined</th><th>Actions</th></tr></thead>
               <tbody id="users-tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
             </table>
           </div>
+          <div class="pagination" id="users-pagination"></div>
         </div>
       </div>
 
@@ -274,12 +305,26 @@
             <h3><i class="fas fa-store"></i> All Listings</h3>
             <span id="listings-count"></span>
           </div>
+          <div class="toolbar">
+            <input type="text" id="listings-search" placeholder="🔍 Search by name, breed, location…" oninput="renderListings()"/>
+            <select id="listings-filter-type" onchange="renderListings()">
+              <option value="">All Types</option>
+              <option>cattle</option><option>goats</option><option>sheep</option>
+              <option>poultry</option><option>pigs</option><option>rabbits</option>
+              <option>camels</option><option>donkeys</option><option>fish</option>
+            </select>
+            <select id="listings-filter-status" onchange="renderListings()">
+              <option value="">All Statuses</option>
+              <option>active</option><option>pending</option><option>sold</option>
+            </select>
+          </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Animal</th><th>Type</th><th>Price (KES)</th><th>Location</th><th>Seller</th><th>Status</th><th>Actions</th></tr></thead>
-              <tbody id="listings-tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
+              <thead><tr><th>#</th><th>Animal</th><th>Type</th><th>Qty</th><th>Price (KES)</th><th>Location</th><th>Seller</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="listings-tbody"><tr><td colspan="9" class="loading">Loading…</td></tr></tbody>
             </table>
           </div>
+          <div class="pagination" id="listings-pagination"></div>
         </div>
       </div>
 
@@ -327,6 +372,27 @@
               <thead><tr><th>#</th><th>User</th><th>Email</th><th>Plan</th><th>Billing</th><th>Amount (KES)</th><th>Status</th><th>Started</th><th>Expires</th></tr></thead>
               <tbody id="subs-tbody"><tr><td colspan="9" class="loading">Loading…</td></tr></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SEED DATA ── -->
+      <div class="section" id="section-seeddata">
+        <div class="card" style="max-width:600px;margin:auto">
+          <div class="card-header"><h3><i class="fas fa-seedling"></i> Seed Livestock Data</h3></div>
+          <div style="padding:32px;text-align:center">
+            <div style="font-size:3rem;margin-bottom:16px">🐄🐐🐑🐓🐷</div>
+            <h2 style="margin-bottom:8px;color:var(--green-dark)">Populate 1,000 Livestock Listings</h2>
+            <p style="color:var(--gray-600);margin-bottom:24px;line-height:1.6">
+              This will add up to <strong>1,000 real East African livestock listings</strong> — cattle, goats, sheep, poultry, pigs, rabbits, camels, donkeys & fish — with Unsplash images, realistic KES prices, and locations across Kenya, Uganda, Tanzania, Rwanda & Ethiopia.
+            </p>
+            <div id="seed-status" style="margin-bottom:20px;font-size:.9rem;color:var(--gray-600)">
+              <i class="fas fa-spinner fa-spin"></i> Checking current listing count…
+            </div>
+            <button class="btn-seed" id="seed-btn" onclick="seedListings()" style="font-size:1rem;padding:14px 36px" disabled>
+              <i class="fas fa-database"></i> Seed 1,000 Listings
+            </button>
+            <div id="seed-result" style="margin-top:20px;font-weight:700;font-size:1rem"></div>
           </div>
         </div>
       </div>
@@ -394,14 +460,16 @@ function adminLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const sectionTitles = { dashboard:'Dashboard', users:'Users', listings:'Listings', auctions:'Auctions', messages:'Contact Messages', subscriptions:'Subscriptions' };
+const sectionTitles = { dashboard:'Dashboard', users:'Users', listings:'Listings', auctions:'Auctions', messages:'Contact Messages', subscriptions:'Subscriptions', seeddata:'Seed Livestock Data' };
+const navOrder = ['dashboard','users','listings','auctions','messages','subscriptions','seeddata'];
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('section-' + name).classList.add('active');
-  document.querySelectorAll('.nav-item')[['dashboard','users','listings','auctions','messages','subscriptions'].indexOf(name)].classList.add('active');
+  const idx = navOrder.indexOf(name);
+  if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
   document.getElementById('section-title').textContent = sectionTitles[name];
-  const loaders = { users: loadUsers, listings: loadListings, auctions: loadAuctions, messages: loadMessages, subscriptions: loadSubscriptions };
+  const loaders = { users: loadUsers, listings: loadListings, auctions: loadAuctions, messages: loadMessages, subscriptions: loadSubscriptions, seeddata: loadSeedStatus };
   if (loaders[name]) loaders[name]();
 }
 
@@ -434,27 +502,43 @@ async function loadDashboard() {
 }
 
 // ── Users ─────────────────────────────────────────────────────────────────────
+let allUsers = [], usersPage = 1; const USERS_PER_PAGE = 20;
 async function loadUsers() {
   try {
-    const users = await apiFetch('/api/admin/users');
-    document.getElementById('users-count').textContent = users.length + ' total';
-    document.getElementById('users-tbody').innerHTML = users.map(u => `
-      <tr>
-        <td>${u.id}</td>
-        <td><b>${u.full_name}</b>${u.farm_name ? '<br><small>'+u.farm_name+'</small>':''}</td>
-        <td>${u.email}</td>
-        <td>${u.phone || '—'}</td>
-        <td><span class="badge ${u.role}">${u.role}</span></td>
-        <td><span class="badge ${u.subscription_plan || 'free'}">${u.subscription_plan || 'free'}</span></td>
-        <td>${fmtDate(u.created_at)}</td>
-        <td class="actions">
-          <button class="btn-sm blue" onclick="changeRole(${u.id},'farmer')">Farmer</button>
-          <button class="btn-sm green" onclick="changeRole(${u.id},'buyer')">Buyer</button>
-          <button class="btn-sm amber" onclick="changeRole(${u.id},'admin')">Admin</button>
-          <button class="btn-sm red" onclick="deleteUser(${u.id},'${u.full_name}')">Delete</button>
-        </td>
-      </tr>`).join('') || '<tr><td colspan="8" class="empty">No users found</td></tr>';
+    allUsers = await apiFetch('/api/admin/users');
+    usersPage = 1;
+    document.getElementById('users-count').textContent = allUsers.length + ' total';
+    filterAndRenderUsers();
   } catch(e) { toast('Error loading users: ' + e.message, 'error'); }
+}
+function filterAndRenderUsers() {
+  const q = (document.getElementById('users-search')?.value || '').toLowerCase();
+  const role = document.getElementById('users-filter-role')?.value || '';
+  const filtered = allUsers.filter(u =>
+    (!q || u.full_name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q)) &&
+    (!role || u.role === role)
+  );
+  const pages = Math.ceil(filtered.length / USERS_PER_PAGE) || 1;
+  if (usersPage > pages) usersPage = 1;
+  const slice = filtered.slice((usersPage-1)*USERS_PER_PAGE, usersPage*USERS_PER_PAGE);
+  document.getElementById('users-tbody').innerHTML = slice.map(u => `
+    <tr>
+      <td>${u.id}</td>
+      <td><b>${u.full_name}</b>${u.farm_name ? '<br><small>'+u.farm_name+'</small>':''}</td>
+      <td>${u.email}</td>
+      <td>${u.phone || '—'}</td>
+      <td><span class="badge ${u.role}">${u.role}</span></td>
+      <td><span class="badge ${u.subscription_plan || 'free'}">${u.subscription_plan || 'free'}</span></td>
+      <td>${fmtDate(u.created_at)}</td>
+      <td class="actions">
+        <button class="btn-sm blue" onclick="changeRole(${u.id},'farmer')">Farmer</button>
+        <button class="btn-sm green" onclick="changeRole(${u.id},'buyer')">Buyer</button>
+        <button class="btn-sm amber" onclick="changeRole(${u.id},'admin')">Admin</button>
+        <button class="btn-sm red" onclick="deleteUser(${u.id},'${u.full_name.replace(/'/g,"\\'")}')">Delete</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="8" class="empty">No users found</td></tr>';
+  renderPagination('users-pagination', pages, usersPage, p => { usersPage = p; filterAndRenderUsers(); });
+  document.getElementById('users-count').textContent = `${filtered.length} of ${allUsers.length}`;
 }
 
 async function changeRole(id, role) {
@@ -474,27 +558,48 @@ async function deleteUser(id, name) {
 }
 
 // ── Listings ──────────────────────────────────────────────────────────────────
+let allListings = [], listingsPage = 1; const LISTINGS_PER_PAGE = 25;
 async function loadListings() {
   try {
-    const listings = await apiFetch('/api/admin/listings');
-    document.getElementById('listings-count').textContent = listings.length + ' total';
-    document.getElementById('listings-tbody').innerHTML = listings.map(l => `
-      <tr>
-        <td>${l.id}</td>
-        <td><b>${l.name}</b><br><small>${l.breed || ''} ${l.age ? '· '+l.age : ''}</small></td>
-        <td>${l.type}</td>
-        <td>KES ${fmt(l.price)}</td>
-        <td>${l.location}</td>
-        <td>${l.seller_name || '—'}<br><small>${l.seller_email || ''}</small></td>
-        <td><span class="badge ${l.status}">${l.status}</span></td>
-        <td class="actions">
-          <button class="btn-sm green" onclick="setListingStatus(${l.id},'active')">Activate</button>
-          <button class="btn-sm amber" onclick="setListingStatus(${l.id},'pending')">Pending</button>
-          <button class="btn-sm blue" onclick="setListingStatus(${l.id},'sold')">Mark Sold</button>
-          <button class="btn-sm red" onclick="deleteListing(${l.id})">Delete</button>
-        </td>
-      </tr>`).join('') || '<tr><td colspan="8" class="empty">No listings found</td></tr>';
+    allListings = await apiFetch('/api/admin/listings');
+    listingsPage = 1;
+    renderListings();
   } catch(e) { toast('Error loading listings: ' + e.message, 'error'); }
+}
+function renderListings() {
+  const q = (document.getElementById('listings-search')?.value || '').toLowerCase();
+  const type = document.getElementById('listings-filter-type')?.value || '';
+  const status = document.getElementById('listings-filter-status')?.value || '';
+  const filtered = allListings.filter(l =>
+    (!q || l.name.toLowerCase().includes(q) || (l.breed||'').toLowerCase().includes(q) || l.location.toLowerCase().includes(q)) &&
+    (!type || l.type === type) &&
+    (!status || l.status === status)
+  );
+  const pages = Math.ceil(filtered.length / LISTINGS_PER_PAGE) || 1;
+  if (listingsPage > pages) listingsPage = 1;
+  const slice = filtered.slice((listingsPage-1)*LISTINGS_PER_PAGE, listingsPage*LISTINGS_PER_PAGE);
+  document.getElementById('listings-count').textContent = `${filtered.length} of ${allListings.length}`;
+  document.getElementById('listings-tbody').innerHTML = slice.map(l => `
+    <tr>
+      <td>${l.id}</td>
+      <td>
+        ${l.image_url ? `<img class="thumb" src="${l.image_url}" onerror="this.style.display='none'" loading="lazy"/>` : ''}
+        <b>${l.name}</b><br><small style="color:#757575">${l.breed || ''} ${l.age ? '· '+l.age : ''}</small>
+      </td>
+      <td>${l.type}</td>
+      <td>${l.quantity || 1}</td>
+      <td>KES ${fmt(l.price)}</td>
+      <td>${l.location}</td>
+      <td>${l.seller_name || '—'}<br><small>${l.seller_email || ''}</small></td>
+      <td><span class="badge ${l.status}">${l.status}</span></td>
+      <td class="actions">
+        <button class="btn-sm green" onclick="setListingStatus(${l.id},'active')">Active</button>
+        <button class="btn-sm amber" onclick="setListingStatus(${l.id},'pending')">Pending</button>
+        <button class="btn-sm blue" onclick="setListingStatus(${l.id},'sold')">Sold</button>
+        <button class="btn-sm red" onclick="deleteListing(${l.id})">Delete</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="9" class="empty">No listings found</td></tr>';
+  renderPagination('listings-pagination', pages, listingsPage, p => { listingsPage = p; renderListings(); });
 }
 
 async function setListingStatus(id, status) {
@@ -587,6 +692,57 @@ async function loadSubscriptions() {
         <td>${fmtDate(s.expires_at)}</td>
       </tr>`).join('') || '<tr><td colspan="9" class="empty">No subscriptions found</td></tr>';
   } catch(e) { toast('Error loading subscriptions: ' + e.message, 'error'); }
+}
+
+// ── Pagination Helper ─────────────────────────────────────────────────────────
+function renderPagination(containerId, totalPages, current, onClick) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  if (totalPages <= 1) { el.innerHTML = ''; return; }
+  let html = '';
+  if (current > 1) html += `<button class="page-btn" onclick="(${onClick})(${current-1})">‹ Prev</button>`;
+  const start = Math.max(1, current - 2), end = Math.min(totalPages, current + 2);
+  if (start > 1) html += `<button class="page-btn" onclick="(${onClick})(1)">1</button>${start > 2 ? '<span class="page-info">…</span>' : ''}`;
+  for (let i = start; i <= end; i++) html += `<button class="page-btn${i===current?' active':''}" onclick="(${onClick})(${i})">${i}</button>`;
+  if (end < totalPages) html += `${end < totalPages-1 ? '<span class="page-info">…</span>' : ''}<button class="page-btn" onclick="(${onClick})(${totalPages})">${totalPages}</button>`;
+  if (current < totalPages) html += `<button class="page-btn" onclick="(${onClick})(${current+1})">Next ›</button>`;
+  html += `<span class="page-info">Page ${current}/${totalPages}</span>`;
+  el.innerHTML = html;
+}
+
+// ── Seed Data ─────────────────────────────────────────────────────────────────
+async function loadSeedStatus() {
+  try {
+    const s = await apiFetch('/api/admin/stats');
+    const count = s.listings.total;
+    const btn = document.getElementById('seed-btn');
+    const status = document.getElementById('seed-status');
+    if (count >= 1000) {
+      status.innerHTML = `<span style="color:var(--green)">✅ Database already has <strong>${count}</strong> listings — fully seeded!</span>`;
+      btn.textContent = '✅ Already Seeded';
+      btn.disabled = true;
+    } else {
+      status.innerHTML = `Current listings: <strong>${count}</strong>. Will add <strong>${1000 - count}</strong> more to reach 1,000.`;
+      btn.disabled = false;
+    }
+  } catch(e) { document.getElementById('seed-status').textContent = 'Could not fetch stats.'; }
+}
+
+async function seedListings() {
+  const btn = document.getElementById('seed-btn');
+  const result = document.getElementById('seed-result');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Seeding…';
+  result.textContent = '';
+  try {
+    const data = await apiFetch('/api/admin/seed-listings', { method: 'POST' });
+    result.innerHTML = `<span style="color:var(--green)">${data.message}</span><br><small style="color:#757575">Total listings now: ${data.total}</small>`;
+    toast('🌱 ' + data.message);
+    await loadSeedStatus();
+  } catch(e) {
+    result.innerHTML = `<span style="color:var(--red)">Error: ${e.message}</span>`;
+    toast('Seed failed: ' + e.message, 'error');
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-database"></i> Seed 1,000 Listings';
+  }
 }
 
 // ── Boot ──────────────────────────────────────────────────────────────────────

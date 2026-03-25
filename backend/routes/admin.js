@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
+const { generateListings } = require('../seeds/livestock-seed');
 
 const router = express.Router();
 
@@ -122,6 +123,27 @@ router.delete('/contacts/:id', (req, res) => {
   const info = db.prepare('DELETE FROM contacts WHERE id = ?').run(req.params.id);
   if (info.changes === 0) return res.status(404).json({ error: 'Message not found.' });
   res.json({ success: true, message: 'Contact message deleted.' });
+});
+
+// ─── SEED LIVESTOCK DATA ──────────────────────────────────────────────────────
+router.post('/seed-listings', (req, res) => {
+  const current = db.prepare('SELECT COUNT(*) as n FROM listings').get().n;
+  if (current >= 1000) return res.json({ success: true, message: `Already have ${current} listings – no seed needed.`, added: 0 });
+
+  const admin = db.prepare("SELECT id FROM users WHERE role='admin' LIMIT 1").get();
+  if (!admin) return res.status(500).json({ error: 'No admin user found to assign listings.' });
+
+  const listings = generateListings(admin.id);
+  const toAdd = listings.slice(0, Math.max(0, 1000 - current));
+
+  const insert = db.prepare(`
+    INSERT INTO listings (user_id, type, name, breed, price, location, age, weight, condition, quantity, description, image_url, status)
+    VALUES (@user_id, @type, @name, @breed, @price, @location, @age, @weight, @condition, @quantity, @description, @image_url, @status)
+  `);
+  const insertMany = db.transaction(rows => rows.forEach(r => insert.run(r)));
+  insertMany(toAdd);
+
+  res.json({ success: true, message: `✅ Seeded ${toAdd.length} livestock listings!`, added: toAdd.length, total: current + toAdd.length });
 });
 
 // ─── SUBSCRIPTIONS ────────────────────────────────────────────────────────────
