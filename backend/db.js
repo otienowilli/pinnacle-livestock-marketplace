@@ -120,6 +120,10 @@ db.exec(`
   );
 `);
 
+// ─── Add reply columns to contacts (safe on existing DBs) ────────────────────
+try { db.prepare('ALTER TABLE contacts ADD COLUMN replied_at TEXT').run(); } catch(e) {}
+try { db.prepare('ALTER TABLE contacts ADD COLUMN reply_text TEXT').run(); } catch(e) {}
+
 // ─── Seed Admin Account ───────────────────────────────────────────────────────
 const bcrypt = require('bcryptjs');
 

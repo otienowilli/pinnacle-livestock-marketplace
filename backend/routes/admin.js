@@ -126,6 +126,31 @@ router.delete('/contacts/:id', (req, res) => {
   res.json({ success: true, message: 'Contact message deleted.' });
 });
 
+// POST /api/admin/contacts/:id/reply  – send an email reply to the sender
+router.post('/contacts/:id/reply', async (req, res) => {
+  const { replyMessage } = req.body;
+  if (!replyMessage || !replyMessage.trim())
+    return res.status(400).json({ error: 'Reply message is required.' });
+
+  const contact = db.prepare('SELECT * FROM contacts WHERE id = ?').get(req.params.id);
+  if (!contact) return res.status(404).json({ error: 'Message not found.' });
+
+  const subject = `Re: ${contact.subject || 'Your Pinnacle Inquiry'}`;
+  const body =
+    `Hi ${contact.name},\n\n${replyMessage.trim()}\n\n` +
+    `Best regards,\nThomas Kiboma\nPinnacle Livestock Marketplace\n` +
+    `📞 +254 741 101 607 | ✉️ thomaskiboma@gmail.com`;
+  const html = buildHtml(subject, body);
+
+  const result = await sendMail(contact.email, subject, html);
+
+  // Mark as replied regardless of whether email was delivered
+  db.prepare(`UPDATE contacts SET replied_at = datetime('now'), reply_text = ? WHERE id = ?`)
+    .run(replyMessage.trim(), contact.id);
+
+  res.json({ success: true, sent: result.sent, error: result.error || null });
+});
+
 // ─── SEED LIVESTOCK DATA ──────────────────────────────────────────────────────
 router.post('/seed-listings', (req, res) => {
   const current = db.prepare('SELECT COUNT(*) as n FROM listings').get().n;

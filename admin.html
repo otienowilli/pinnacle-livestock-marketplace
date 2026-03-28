@@ -146,6 +146,43 @@
     .btn-sm.blue { background: var(--blue-light); color: var(--blue); }
     .btn-sm.blue:hover { background: var(--blue); color: var(--white); }
 
+    /* ── Reply Modal ── */
+    .reply-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 9000;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .reply-overlay.hidden { display: none; }
+    .reply-box {
+      background: var(--white); border-radius: 16px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      width: 100%; max-width: 540px; padding: 32px; position: relative;
+    }
+    .reply-box h3 { font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: var(--gray-800); }
+    .reply-box .reply-meta { font-size: .82rem; color: var(--gray-500); margin-bottom: 16px; }
+    .reply-box .reply-orig {
+      background: var(--gray-100); border-left: 3px solid var(--green); border-radius: 6px;
+      padding: 10px 14px; font-size: .82rem; color: var(--gray-600); margin-bottom: 16px;
+      max-height: 90px; overflow-y: auto; white-space: pre-wrap;
+    }
+    .reply-box textarea {
+      width: 100%; min-height: 130px; border: 2px solid var(--gray-200); border-radius: 8px;
+      padding: 12px; font-size: .9rem; font-family: inherit; resize: vertical;
+      transition: var(--transition); box-sizing: border-box;
+    }
+    .reply-box textarea:focus { border-color: var(--green); outline: none; }
+    .reply-box .reply-actions { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
+    .reply-box .btn-send {
+      background: var(--green); color: var(--white); border: none; padding: 10px 24px;
+      border-radius: 8px; font-weight: 700; font-size: .9rem; cursor: pointer; transition: var(--transition);
+    }
+    .reply-box .btn-send:hover { background: var(--green-dark); }
+    .reply-box .btn-send:disabled { opacity: .6; cursor: default; }
+    .reply-box .btn-cancel {
+      background: var(--gray-100); color: var(--gray-700); border: none; padding: 10px 18px;
+      border-radius: 8px; font-weight: 600; font-size: .9rem; cursor: pointer;
+    }
+    .badge-replied { background: #e8f5e9; color: #2e7d32; font-size: .72rem; font-weight: 700;
+      padding: 2px 8px; border-radius: 20px; }
+
     /* ── Toast ── */
     #toast {
       position: fixed; bottom: 24px; right: 24px; background: var(--gray-800);
@@ -363,7 +400,7 @@
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Subject</th><th>Message</th><th>Date</th><th>Actions</th></tr></thead>
+              <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Subject</th><th>Message / Status</th><th>Date</th><th>Actions</th></tr></thead>
               <tbody id="messages-tbody"><tr><td colspan="8" class="loading">Loading…</td></tr></tbody>
             </table>
           </div>
@@ -797,17 +834,29 @@ async function loadMessages() {
   try {
     const msgs = await apiFetch('/api/admin/contacts');
     document.getElementById('messages-count').textContent = msgs.length + ' messages';
-    document.getElementById('messages-tbody').innerHTML = msgs.map(m => `
-      <tr>
+    document.getElementById('messages-tbody').innerHTML = msgs.map(m => {
+      const safeMsg  = m.message.replace(/'/g, "\\'").replace(/`/g, '\\`');
+      const safeName = m.name.replace(/'/g, "\\'");
+      const safeSubj = (m.subject || '').replace(/'/g, "\\'");
+      const repliedBadge = m.replied_at
+        ? `<span class="badge-replied"><i class="fas fa-check"></i> Replied ${fmtDate(m.replied_at)}</span>`
+        : '';
+      return `<tr>
         <td>${m.id}</td>
         <td>${m.name}</td>
         <td>${m.email}</td>
         <td>${m.phone || '—'}</td>
         <td>${m.subject || '—'}</td>
-        <td style="max-width:220px;white-space:normal">${m.message}</td>
+        <td style="max-width:200px;white-space:normal">${m.message}${repliedBadge ? '<br>' + repliedBadge : ''}</td>
         <td>${fmtDate(m.created_at)}</td>
-        <td><button class="btn-sm red" onclick="deleteMessage(${m.id})">Delete</button></td>
-      </tr>`).join('') || '<tr><td colspan="8" class="empty">No messages yet</td></tr>';
+        <td class="actions">
+          <button class="btn-sm green" onclick="openReplyModal(${m.id},'${safeName}','${m.email}','${safeSubj}',\`${safeMsg}\`)">
+            <i class="fas fa-reply"></i> Reply
+          </button>
+          <button class="btn-sm red" onclick="deleteMessage(${m.id})">Delete</button>
+        </td>
+      </tr>`;
+    }).join('') || '<tr><td colspan="8" class="empty">No messages yet</td></tr>';
   } catch(e) { toast('Error loading messages: ' + e.message, 'error'); }
 }
 
@@ -994,6 +1043,50 @@ async function sendNotification() {
   }
 }
 
+// ── Reply Modal ───────────────────────────────────────────────────────────────
+let _replyContactId = null;
+
+function openReplyModal(id, name, email, subject, originalMsg) {
+  _replyContactId = id;
+  document.getElementById('replyMeta').innerHTML =
+    `<strong>To:</strong> ${name} &lt;${email}&gt; &nbsp;|&nbsp; <strong>Subject:</strong> Re: ${subject || 'Your Pinnacle Inquiry'}`;
+  document.getElementById('replyOrig').textContent = originalMsg || '';
+  document.getElementById('replyText').value = '';
+  document.getElementById('replyOverlay').classList.remove('hidden');
+  setTimeout(() => document.getElementById('replyText').focus(), 100);
+}
+
+function closeReplyModal(e) {
+  if (e && e.target !== document.getElementById('replyOverlay')) return;
+  document.getElementById('replyOverlay').classList.add('hidden');
+  _replyContactId = null;
+}
+
+async function sendReply() {
+  const msg = document.getElementById('replyText').value.trim();
+  if (!msg) { toast('Please type a reply message first.', 'error'); return; }
+  const btn = document.getElementById('replySendBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+  try {
+    const res = await apiFetch(`/api/admin/contacts/${_replyContactId}/reply`, {
+      method: 'POST',
+      body: JSON.stringify({ replyMessage: msg })
+    });
+    if (res.sent) {
+      toast('✅ Reply sent to sender\'s email!');
+    } else {
+      toast('💾 Reply saved (email not sent — SMTP not configured)', 'error');
+    }
+    document.getElementById('replyOverlay').classList.add('hidden');
+    _replyContactId = null;
+    loadMessages(); // refresh table to show Replied badge
+  } catch(e) {
+    toast('Error: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Reply';
+  }
+}
+
 // ── Boot ──────────────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   if (adminToken) {
@@ -1004,6 +1097,22 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('admin-password').addEventListener('keydown', e => { if (e.key === 'Enter') adminLogin(); });
 });
 </script>
+
+<!-- ── Reply Modal ── -->
+<div class="reply-overlay hidden" id="replyOverlay" onclick="closeReplyModal(event)">
+  <div class="reply-box" onclick="event.stopPropagation()">
+    <h3><i class="fas fa-reply" style="color:var(--green);margin-right:8px"></i>Reply to Message</h3>
+    <div class="reply-meta" id="replyMeta"></div>
+    <div class="reply-orig" id="replyOrig"></div>
+    <textarea id="replyText" placeholder="Type your reply here…"></textarea>
+    <div class="reply-actions">
+      <button class="btn-cancel" onclick="closeReplyModal()">Cancel</button>
+      <button class="btn-send" id="replySendBtn" onclick="sendReply()">
+        <i class="fas fa-paper-plane"></i> Send Reply
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
 
