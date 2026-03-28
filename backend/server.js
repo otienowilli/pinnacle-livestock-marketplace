@@ -42,11 +42,37 @@ app.use((err, _req, res, _next) => {
   res.status(500).json({ error: 'Internal server error', detail: err.message });
 });
 
+// ─── Auto-seed listings on startup ───────────────────────────────────────────
+function autoSeed() {
+  try {
+    const db = require('./db');
+    const { generateListings } = require('./seeds/livestock-seed');
+    const count = db.prepare('SELECT COUNT(*) as n FROM listings').get().n;
+    if (count < 1000) {
+      const admin = db.prepare("SELECT id FROM users WHERE role='admin' LIMIT 1").get();
+      if (!admin) { console.log('⚠️  No admin user found – skipping auto-seed.'); return; }
+      const listings = generateListings(admin.id);
+      const toAdd = listings.slice(0, Math.max(0, 1000 - count));
+      const insert = db.prepare(`
+        INSERT INTO listings (user_id, type, name, breed, price, location, age, weight, condition, quantity, description, image_url, status)
+        VALUES (@user_id, @type, @name, @breed, @price, @location, @age, @weight, @condition, @quantity, @description, @image_url, @status)
+      `);
+      db.transaction(rows => rows.forEach(r => insert.run(r)))(toAdd);
+      console.log(`🌱 Auto-seeded ${toAdd.length} listings (total: ${count + toAdd.length})`);
+    } else {
+      console.log(`✅ Listings OK – ${count} in database.`);
+    }
+  } catch (err) {
+    console.error('Auto-seed error:', err.message);
+  }
+}
+
 // ─── Start ────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`✅ Pinnacle API running at http://localhost:${PORT}`);
   console.log(`   Frontend  → http://localhost:${PORT}`);
   console.log(`   API docs  → http://localhost:${PORT}/api/health`);
+  autoSeed();
 });
 
