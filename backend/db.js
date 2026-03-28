@@ -89,6 +89,28 @@ db.exec(`
     reward_paid INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS activity_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER REFERENCES users(id),
+    user_email TEXT,
+    user_name TEXT,
+    action TEXT NOT NULL,
+    detail TEXT,
+    ip TEXT,
+    created_at TEXT DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sent_by INTEGER REFERENCES users(id),
+    target TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    message TEXT NOT NULL,
+    recipients_count INTEGER DEFAULT 0,
+    status TEXT DEFAULT 'sent',
+    created_at TEXT DEFAULT (datetime('now'))
+  );
 `);
 
 // ─── Seed Admin Account ───────────────────────────────────────────────────────

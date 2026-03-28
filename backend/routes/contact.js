@@ -1,5 +1,6 @@
 const express = require('express');
 const db = require('../db');
+const { logActivity } = require('../utils/activity');
 
 const router = express.Router();
 
@@ -14,6 +15,7 @@ router.post('/', (req, res) => {
     VALUES (?, ?, ?, ?, ?)
   `).run(name, email, phone || null, subject || null, message);
 
+  logActivity({ userEmail: email, userName: name, action: 'contact_form', detail: `Subject: ${subject || 'General'} – "${message.substring(0, 80)}${message.length > 80 ? '…' : ''}"`, req });
   res.status(201).json({ success: true, message: 'Message received! Our team will respond within 2 hours.' });
 });
 

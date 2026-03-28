@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db');
 const { requireAdmin } = require('../middleware/auth');
 const { generateListings } = require('../seeds/livestock-seed');
+const { sendMail, buildHtml } = require('../utils/mailer');
 
 const router = express.Router();
 
@@ -144,6 +145,81 @@ router.post('/seed-listings', (req, res) => {
   insertMany(toAdd);
 
   res.json({ success: true, message: `✅ Seeded ${toAdd.length} livestock listings!`, added: toAdd.length, total: current + toAdd.length });
+});
+
+// ─── ACTIVITY LOG ─────────────────────────────────────────────────────────────
+router.get('/activity', (req, res) => {
+  const limit  = Math.min(Number(req.query.limit)  || 100, 500);
+  const offset = Number(req.query.offset) || 0;
+  const action = req.query.action || null;
+
+  let sql = 'SELECT * FROM activity_logs';
+  const params = [];
+  if (action) { sql += ' WHERE action = ?'; params.push(action); }
+  sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+  params.push(limit, offset);
+
+  const logs  = db.prepare(sql).all(...params);
+  const total = db.prepare(`SELECT COUNT(*) as n FROM activity_logs${action ? ' WHERE action = ?' : ''}`).get(...(action ? [action] : [])).n;
+  res.json({ logs, total, limit, offset });
+});
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────────
+// GET /api/admin/notifications  – list previously sent notifications
+router.get('/notifications', (req, res) => {
+  const notifs = db.prepare('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50').all();
+  res.json(notifs);
+});
+
+// POST /api/admin/notify  – send email notification to users
+router.post('/notify', async (req, res) => {
+  const { target, subject, message } = req.body;
+  if (!target || !subject || !message) {
+    return res.status(400).json({ error: 'target, subject and message are required.' });
+  }
+
+  // Resolve recipients
+  let emails = [];
+  if (target === 'all') {
+    emails = db.prepare("SELECT email FROM users WHERE email IS NOT NULL").all().map(r => r.email);
+  } else if (target === 'farmers') {
+    emails = db.prepare("SELECT email FROM users WHERE role='farmer'").all().map(r => r.email);
+  } else if (target === 'buyers') {
+    emails = db.prepare("SELECT email FROM users WHERE role='buyer'").all().map(r => r.email);
+  } else {
+    // Treat as a specific email or user id
+    const user = db.prepare("SELECT email FROM users WHERE email=? OR id=?").get(target, Number(target) || 0);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+    emails = [user.email];
+  }
+
+  if (emails.length === 0) {
+    return res.status(400).json({ error: 'No recipients found for the selected target.' });
+  }
+
+  // Save to DB first (always)
+  const info = db.prepare(`
+    INSERT INTO notifications (sent_by, target, subject, message, recipients_count, status)
+    VALUES (?, ?, ?, ?, ?, 'sent')
+  `).run(req.user.id, target, subject, message, emails.length);
+
+  // Attempt to send emails
+  const html = buildHtml(subject, message);
+  const results = await Promise.allSettled(emails.map(email => sendMail(email, subject, html)));
+  const sent = results.filter(r => r.status === 'fulfilled' && r.value?.sent).length;
+  const failed = emails.length - sent;
+
+  res.json({
+    success: true,
+    notification_id: info.lastInsertRowid,
+    recipients: emails.length,
+    emails_sent: sent,
+    emails_failed: failed,
+    smtp_configured: !!(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS),
+    message: sent > 0
+      ? `Notification sent to ${sent} recipient(s)${failed > 0 ? `, ${failed} failed` : ''}.`
+      : `Notification saved. ${failed} email(s) not sent – SMTP not configured on server.`
+  });
 });
 
 // ─── SUBSCRIPTIONS ────────────────────────────────────────────────────────────

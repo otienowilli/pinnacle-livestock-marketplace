@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth } = require('../middleware/auth');
+const { logActivity } = require('../utils/activity');
 
 const router = express.Router();
 
@@ -54,6 +55,7 @@ router.post('/:id/bid', requireAuth, (req, res) => {
   db.prepare('INSERT INTO bids (auction_id, user_id, amount) VALUES (?, ?, ?)').run(auction.id, req.user.id, Number(amount));
   db.prepare('UPDATE auctions SET current_bid = ?, bid_count = bid_count + 1 WHERE id = ?').run(Number(amount), auction.id);
 
+  logActivity({ userId: req.user.id, userEmail: req.user.email, userName: req.user.full_name, action: 'place_bid', detail: `Bid KES ${Number(amount).toLocaleString()} on auction #${auction.id}`, req });
   res.json({
     success: true,
     message: `Bid of KSh ${Number(amount).toLocaleString()} placed successfully!`,

@@ -183,7 +183,7 @@
       .sidebar { width: 60px; }
       .sidebar-logo span, .nav-item span, .admin-info, .sidebar-badge { display: none; }
       .main { margin-left: 60px; }
-      .two-col { grid-template-columns: 1fr; }
+      .two-col, .notify-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -241,6 +241,12 @@
       </div>
       <div class="nav-item" onclick="showSection('seeddata')">
         <i class="fas fa-seedling"></i><span>Seed Data</span>
+      </div>
+      <div class="nav-item" onclick="showSection('activity')">
+        <i class="fas fa-activity"></i><span>Activity Log</span>
+      </div>
+      <div class="nav-item" onclick="showSection('notify')">
+        <i class="fas fa-paper-plane"></i><span>Notifications</span>
       </div>
     </nav>
     <div class="sidebar-footer">
@@ -399,6 +405,90 @@
         </div>
       </div>
 
+      <!-- ── ACTIVITY LOG ── -->
+      <div class="section" id="section-activity">
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fas fa-chart-line"></i> User Activity Log</h3>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <select id="activity-filter" onchange="loadActivity()" style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:.85rem">
+                <option value="">All Actions</option>
+                <option value="login">Login</option>
+                <option value="register">Register</option>
+                <option value="view_listings">Browse Listings</option>
+                <option value="create_listing">Create Listing</option>
+                <option value="place_bid">Place Bid</option>
+                <option value="contact_form">Contact Form</option>
+              </select>
+              <button onclick="loadActivity()" style="padding:6px 14px;background:var(--green);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.85rem">
+                <i class="fas fa-refresh"></i> Refresh
+              </button>
+            </div>
+          </div>
+          <div id="activity-count" style="padding:10px 20px;font-size:.85rem;color:var(--gray-600)"></div>
+          <div class="table-wrap">
+            <table id="activity-table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Time</th><th>User</th><th>Email</th><th>Action</th><th>Detail</th><th>IP</th>
+                </tr>
+              </thead>
+              <tbody><tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr></tbody>
+            </table>
+          </div>
+          <div style="padding:16px 20px;display:flex;gap:8px;align-items:center" id="activity-pagination"></div>
+        </div>
+      </div>
+
+      <!-- ── SEND NOTIFICATIONS ── -->
+      <div class="section" id="section-notify">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start" class="notify-grid">
+
+          <!-- Compose Form -->
+          <div class="card">
+            <div class="card-header"><h3><i class="fas fa-paper-plane"></i> Send Notification</h3></div>
+            <div style="padding:28px;display:flex;flex-direction:column;gap:16px">
+              <div>
+                <label style="font-weight:600;font-size:.9rem;display:block;margin-bottom:6px">Recipients</label>
+                <select id="notify-target" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.9rem">
+                  <option value="all">📢 All Users</option>
+                  <option value="farmers">🌾 Farmers Only</option>
+                  <option value="buyers">🛒 Buyers Only</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-weight:600;font-size:.9rem;display:block;margin-bottom:6px">Subject</label>
+                <input type="text" id="notify-subject" placeholder="e.g. New Livestock Listings Added!" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.9rem;box-sizing:border-box"/>
+              </div>
+              <div>
+                <label style="font-weight:600;font-size:.9rem;display:block;margin-bottom:6px">Message</label>
+                <textarea id="notify-message" rows="7" placeholder="Write your message here…" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-size:.9rem;resize:vertical;box-sizing:border-box"></textarea>
+              </div>
+              <button id="notify-btn" onclick="sendNotification()" style="padding:12px;background:var(--green-dark);color:#fff;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer">
+                <i class="fas fa-paper-plane"></i> Send Notification
+              </button>
+              <div id="notify-result" style="font-weight:600;font-size:.9rem;text-align:center;min-height:24px"></div>
+            </div>
+          </div>
+
+          <!-- Sent History -->
+          <div class="card">
+            <div class="card-header">
+              <h3><i class="fas fa-history"></i> Sent History</h3>
+              <button onclick="loadNotifications()" style="padding:4px 10px;background:transparent;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:.8rem">
+                <i class="fas fa-refresh"></i>
+              </button>
+            </div>
+            <div class="table-wrap">
+              <table id="notif-history-table">
+                <thead><tr><th>Time</th><th>Target</th><th>Subject</th><th>Recipients</th></tr></thead>
+                <tbody><tr><td colspan="4" class="loading">Loading…</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /content -->
   </div><!-- /main -->
 </div><!-- /admin-shell -->
@@ -462,8 +552,8 @@ function adminLogout() {
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
-const sectionTitles = { dashboard:'Dashboard', users:'Users', listings:'Listings', auctions:'Auctions', messages:'Contact Messages', subscriptions:'Subscriptions', seeddata:'Seed Livestock Data' };
-const navOrder = ['dashboard','users','listings','auctions','messages','subscriptions','seeddata'];
+const sectionTitles = { dashboard:'Dashboard', users:'Users', listings:'Listings', auctions:'Auctions', messages:'Contact Messages', subscriptions:'Subscriptions', seeddata:'Seed Livestock Data', activity:'Activity Log', notify:'Send Notifications' };
+const navOrder = ['dashboard','users','listings','auctions','messages','subscriptions','seeddata','activity','notify'];
 function showSection(name) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -471,7 +561,7 @@ function showSection(name) {
   const idx = navOrder.indexOf(name);
   if (idx >= 0) document.querySelectorAll('.nav-item')[idx].classList.add('active');
   document.getElementById('section-title').textContent = sectionTitles[name];
-  const loaders = { users: loadUsers, listings: loadListings, auctions: loadAuctions, messages: loadMessages, subscriptions: loadSubscriptions, seeddata: loadSeedStatus };
+  const loaders = { users: loadUsers, listings: loadListings, auctions: loadAuctions, messages: loadMessages, subscriptions: loadSubscriptions, seeddata: loadSeedStatus, activity: loadActivity, notify: loadNotifications };
   if (loaders[name]) loaders[name]();
   // Auto-refresh only while Users tab is active
   if (name === 'users') { startUsersAutoRefresh(); }
@@ -765,6 +855,107 @@ async function seedListings() {
     result.innerHTML = `<span style="color:var(--red)">Error: ${e.message}</span>`;
     toast('Seed failed: ' + e.message, 'error');
     btn.disabled = false; btn.innerHTML = '<i class="fas fa-database"></i> Seed 1,000 Listings';
+  }
+}
+
+// ── Activity Log ──────────────────────────────────────────────────────────────
+let activityOffset = 0;
+const activityLimit = 50;
+
+const actionLabels = {
+  login: '🔐 Login', register: '🆕 Register', view_listings: '👁 Browse',
+  create_listing: '📝 Post Listing', place_bid: '💰 Bid', contact_form: '✉️ Contact'
+};
+
+async function loadActivity(reset) {
+  if (reset || reset === undefined) activityOffset = 0;
+  const filter = document.getElementById('activity-filter')?.value || '';
+  const url = `/api/admin/activity?limit=${activityLimit}&offset=${activityOffset}${filter ? '&action=' + filter : ''}`;
+  const tbody = document.querySelector('#activity-table tbody');
+  tbody.innerHTML = '<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>';
+  try {
+    const data = await apiFetch(url);
+    document.getElementById('activity-count').textContent =
+      `Showing ${activityOffset + 1}–${Math.min(activityOffset + data.logs.length, data.total)} of ${data.total} events`;
+    tbody.innerHTML = data.logs.length ? data.logs.map(l => `
+      <tr>
+        <td style="color:#999;font-size:.8rem">${l.id}</td>
+        <td style="font-size:.8rem;white-space:nowrap">${new Date(l.created_at).toLocaleString('en-KE',{dateStyle:'short',timeStyle:'short'})}</td>
+        <td>${l.user_name || '<span style="color:#bbb">Guest</span>'}</td>
+        <td style="font-size:.8rem">${l.user_email || '—'}</td>
+        <td><span style="background:#e8f5e9;color:#2e7d32;padding:2px 8px;border-radius:20px;font-size:.78rem;white-space:nowrap">${actionLabels[l.action] || l.action}</span></td>
+        <td style="font-size:.82rem;color:#424242">${l.detail || '—'}</td>
+        <td style="font-size:.78rem;color:#999">${l.ip || '—'}</td>
+      </tr>`).join('') : '<tr><td colspan="7" style="text-align:center;padding:32px;color:#bbb">No activity recorded yet.</td></tr>';
+
+    // Pagination buttons
+    const pg = document.getElementById('activity-pagination');
+    pg.innerHTML = '';
+    if (activityOffset > 0) {
+      const prev = document.createElement('button');
+      prev.innerHTML = '← Prev'; prev.style.cssText = 'padding:6px 14px;border:1px solid #ddd;border-radius:6px;cursor:pointer;background:#fff';
+      prev.onclick = () => { activityOffset = Math.max(0, activityOffset - activityLimit); loadActivity(false); };
+      pg.appendChild(prev);
+    }
+    if (activityOffset + activityLimit < data.total) {
+      const next = document.createElement('button');
+      next.innerHTML = 'Next →'; next.style.cssText = 'padding:6px 14px;background:var(--green-dark);color:#fff;border:none;border-radius:6px;cursor:pointer';
+      next.onclick = () => { activityOffset += activityLimit; loadActivity(false); };
+      pg.appendChild(next);
+    }
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="7" style="color:red;text-align:center">${e.message}</td></tr>`;
+  }
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+async function loadNotifications() {
+  const tbody = document.querySelector('#notif-history-table tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '<tr><td colspan="4" class="loading">Loading…</td></tr>';
+  try {
+    const data = await apiFetch('/api/admin/notifications');
+    tbody.innerHTML = data.length ? data.map(n => `
+      <tr>
+        <td style="font-size:.8rem;white-space:nowrap">${new Date(n.created_at).toLocaleString('en-KE',{dateStyle:'short',timeStyle:'short'})}</td>
+        <td><span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:20px;font-size:.78rem">${n.target}</span></td>
+        <td style="font-size:.85rem">${n.subject}</td>
+        <td style="text-align:center;font-weight:700;color:var(--green-dark)">${n.recipients_count}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="4" style="text-align:center;padding:24px;color:#bbb">No notifications sent yet.</td></tr>';
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="4" style="color:red">${e.message}</td></tr>`;
+  }
+}
+
+async function sendNotification() {
+  const btn = document.getElementById('notify-btn');
+  const result = document.getElementById('notify-result');
+  const target  = document.getElementById('notify-target').value;
+  const subject = document.getElementById('notify-subject').value.trim();
+  const message = document.getElementById('notify-message').value.trim();
+  if (!subject || !message) { result.innerHTML = '<span style="color:red">Please fill in subject and message.</span>'; return; }
+
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+  result.textContent = '';
+  try {
+    const data = await apiFetch('/api/admin/notify', {
+      method: 'POST',
+      body: JSON.stringify({ target, subject, message })
+    });
+    result.innerHTML = `<span style="color:var(--green)">✅ ${data.message}</span>`;
+    if (!data.smtp_configured) {
+      result.innerHTML += `<br><small style="color:#f57c00">⚠️ SMTP not set up – emails saved to DB but not delivered. Add SMTP_HOST, SMTP_USER, SMTP_PASS in Railway variables.</small>`;
+    }
+    toast('📨 Notification sent!');
+    document.getElementById('notify-subject').value = '';
+    document.getElementById('notify-message').value = '';
+    await loadNotifications();
+  } catch(e) {
+    result.innerHTML = `<span style="color:red">Error: ${e.message}</span>`;
+    toast('Failed: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Notification';
   }
 }
 

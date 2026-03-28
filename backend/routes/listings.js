@@ -1,12 +1,16 @@
 const express = require('express');
 const db = require('../db');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
+const { logActivity } = require('../utils/activity');
 
 const router = express.Router();
 
 // GET /api/listings  (with optional filters: type, location, minPrice, maxPrice, search)
 router.get('/', optionalAuth, (req, res) => {
   const { type, location, minPrice, maxPrice, search } = req.query;
+  if (req.user) {
+    logActivity({ userId: req.user.id, userEmail: req.user.email, userName: req.user.full_name, action: 'view_listings', detail: `Browsed marketplace${type ? ' – type: ' + type : ''}${search ? ' – search: ' + search : ''}`, req });
+  }
   let sql = `SELECT l.*, u.full_name AS seller_name, u.phone AS seller_phone
              FROM listings l LEFT JOIN users u ON l.user_id = u.id
              WHERE l.status = 'active'`;
@@ -44,6 +48,7 @@ router.post('/', requireAuth, (req, res) => {
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(req.user.id, type, name, Number(price), location, age || null, weight || null, breed || null, condition || 'Excellent', Number(quantity) || 1, description || null);
 
+  logActivity({ userId: req.user.id, userEmail: req.user.email, userName: req.user.full_name, action: 'create_listing', detail: `Posted listing: ${name} (${type}) at KES ${Number(price).toLocaleString()} – ${location}`, req });
   res.status(201).json({ id: result.lastInsertRowid, message: 'Listing created successfully.' });
 });
 
