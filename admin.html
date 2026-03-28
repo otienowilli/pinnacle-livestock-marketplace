@@ -225,6 +225,7 @@
       </div>
       <div class="nav-item" onclick="showSection('users')">
         <i class="fas fa-users"></i><span>Users</span>
+        <span class="sidebar-badge" id="users-nav-count" style="margin-left:auto;display:none"></span>
       </div>
       <div class="nav-item" onclick="showSection('listings')">
         <i class="fas fa-store"></i><span>Listings</span>
@@ -287,6 +288,7 @@
               <option value="">All Roles</option>
               <option>admin</option><option>farmer</option><option>buyer</option>
             </select>
+            <button class="btn-seed" onclick="loadUsers()" title="Refresh user list"><i class="fas fa-rotate-right"></i> Refresh</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -471,6 +473,9 @@ function showSection(name) {
   document.getElementById('section-title').textContent = sectionTitles[name];
   const loaders = { users: loadUsers, listings: loadListings, auctions: loadAuctions, messages: loadMessages, subscriptions: loadSubscriptions, seeddata: loadSeedStatus };
   if (loaders[name]) loaders[name]();
+  // Auto-refresh only while Users tab is active
+  if (name === 'users') { startUsersAutoRefresh(); }
+  else { stopUsersAutoRefresh(); }
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
@@ -503,13 +508,31 @@ async function loadDashboard() {
 
 // ── Users ─────────────────────────────────────────────────────────────────────
 let allUsers = [], usersPage = 1; const USERS_PER_PAGE = 20;
+let usersRefreshInterval = null;
+
 async function loadUsers() {
   try {
+    const prev = allUsers.length;
     allUsers = await apiFetch('/api/admin/users');
     usersPage = 1;
     document.getElementById('users-count').textContent = allUsers.length + ' total';
+    // Update sidebar badge
+    const badge = document.getElementById('users-nav-count');
+    if (badge) { badge.textContent = allUsers.length; badge.style.display = ''; }
+    // Notify if new users joined since last load
+    if (prev > 0 && allUsers.length > prev) {
+      toast(`🎉 ${allUsers.length - prev} new user(s) just registered!`);
+    }
     filterAndRenderUsers();
   } catch(e) { toast('Error loading users: ' + e.message, 'error'); }
+}
+
+function startUsersAutoRefresh() {
+  stopUsersAutoRefresh();
+  usersRefreshInterval = setInterval(loadUsers, 30000); // refresh every 30 s
+}
+function stopUsersAutoRefresh() {
+  if (usersRefreshInterval) { clearInterval(usersRefreshInterval); usersRefreshInterval = null; }
 }
 function filterAndRenderUsers() {
   const q = (document.getElementById('users-search')?.value || '').toLowerCase();
