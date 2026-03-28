@@ -1,7 +1,14 @@
 const Database = require('better-sqlite3');
 const path = require('path');
+const fs = require('fs');
 
-const db = new Database(path.join(__dirname, 'pinnacle.db'));
+// Use Railway persistent volume if available, otherwise fall back to local file
+const DB_DIR  = process.env.DB_PATH || __dirname;
+const DB_FILE = path.join(DB_DIR, 'pinnacle.db');
+if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });
+
+console.log(`📦 Database location: ${DB_FILE}`);
+const db = new Database(DB_FILE);
 
 // Enable WAL mode for better performance
 db.pragma('journal_mode = WAL');
