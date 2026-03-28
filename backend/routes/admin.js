@@ -149,18 +149,19 @@ router.post('/seed-listings', (req, res) => {
 
 // ─── ACTIVITY LOG ─────────────────────────────────────────────────────────────
 router.get('/activity', (req, res) => {
-  const limit  = Math.min(Number(req.query.limit)  || 100, 500);
+  const limit  = Math.min(Number(req.query.limit) || 50, 500);
   const offset = Number(req.query.offset) || 0;
   const action = req.query.action || null;
+  const user   = req.query.user   || null;   // search by name or email
 
-  let sql = 'SELECT * FROM activity_logs';
-  const params = [];
-  if (action) { sql += ' WHERE action = ?'; params.push(action); }
-  sql += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
-  params.push(limit, offset);
+  const conditions = [];
+  const params     = [];
+  if (action) { conditions.push('action = ?');                              params.push(action); }
+  if (user)   { conditions.push('(user_name LIKE ? OR user_email LIKE ?)'); params.push(`%${user}%`, `%${user}%`); }
 
-  const logs  = db.prepare(sql).all(...params);
-  const total = db.prepare(`SELECT COUNT(*) as n FROM activity_logs${action ? ' WHERE action = ?' : ''}`).get(...(action ? [action] : [])).n;
+  const where = conditions.length ? ' WHERE ' + conditions.join(' AND ') : '';
+  const logs  = db.prepare(`SELECT * FROM activity_logs${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`).all(...params, limit, offset);
+  const total = db.prepare(`SELECT COUNT(*) as n FROM activity_logs${where}`).get(...params).n;
   res.json({ logs, total, limit, offset });
 });
 

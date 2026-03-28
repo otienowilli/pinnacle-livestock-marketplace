@@ -243,7 +243,7 @@
         <i class="fas fa-seedling"></i><span>Seed Data</span>
       </div>
       <div class="nav-item" onclick="showSection('activity')">
-        <i class="fas fa-activity"></i><span>Activity Log</span>
+        <i class="fas fa-history"></i><span>Activity Log</span>
       </div>
       <div class="nav-item" onclick="showSection('notify')">
         <i class="fas fa-paper-plane"></i><span>Notifications</span>
@@ -409,8 +409,9 @@
       <div class="section" id="section-activity">
         <div class="card">
           <div class="card-header">
-            <h3><i class="fas fa-chart-line"></i> User Activity Log</h3>
+            <h3><i class="fas fa-history"></i> User Activity Log</h3>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="activity-user-search" placeholder="🔍 Search by name or email…" oninput="loadActivity()" style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:.85rem;min-width:200px"/>
               <select id="activity-filter" onchange="loadActivity()" style="padding:6px 10px;border-radius:6px;border:1px solid #ddd;font-size:.85rem">
                 <option value="">All Actions</option>
                 <option value="login">Login</option>
@@ -421,7 +422,7 @@
                 <option value="contact_form">Contact Form</option>
               </select>
               <button onclick="loadActivity()" style="padding:6px 14px;background:var(--green);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:.85rem">
-                <i class="fas fa-refresh"></i> Refresh
+                <i class="fas fa-sync-alt"></i> Refresh
               </button>
             </div>
           </div>
@@ -870,7 +871,10 @@ const actionLabels = {
 async function loadActivity(reset) {
   if (reset || reset === undefined) activityOffset = 0;
   const filter = document.getElementById('activity-filter')?.value || '';
-  const url = `/api/admin/activity?limit=${activityLimit}&offset=${activityOffset}${filter ? '&action=' + filter : ''}`;
+  const userSearch = document.getElementById('activity-user-search')?.value || '';
+  let url = `/api/admin/activity?limit=${activityLimit}&offset=${activityOffset}`;
+  if (filter) url += `&action=${encodeURIComponent(filter)}`;
+  if (userSearch) url += `&user=${encodeURIComponent(userSearch)}`;
   const tbody = document.querySelector('#activity-table tbody');
   tbody.innerHTML = '<tr><td colspan="7" class="loading"><i class="fas fa-spinner fa-spin"></i> Loading…</td></tr>';
   try {
