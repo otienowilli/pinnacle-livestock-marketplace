@@ -338,13 +338,15 @@ async function handleContact(e) {
   const btn = form.querySelector('button[type="submit"]');
   if (btn) btn.disabled = true;
   try {
+    const role    = form.querySelector('[name="role"]')?.value    || '';
+    const subject = form.querySelector('[name="subject"]')?.value || '';
     await apiFetch('/contact', {
       method: 'POST',
       body: JSON.stringify({
         name:    form.querySelector('[name="name"]')?.value,
         email:   form.querySelector('[name="email"]')?.value,
         phone:   form.querySelector('[name="phone"]')?.value,
-        subject: form.querySelector('[name="subject"]')?.value,
+        subject: [role, subject].filter(Boolean).join(' — ') || 'General Inquiry',
         message: form.querySelector('[name="message"]')?.value,
       })
     });
