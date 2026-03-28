@@ -87,7 +87,7 @@ function buildHtml(subject, message) {
     <a class="btn" href="https://pinnacle-livestock-marketplace-production.up.railway.app">Visit Pinnacle</a>
   </div>
   <div class="footer">
-    © 2026 Pinnacle Livestock Marketplace · support@pinnacle.co.ke · +254 741 101 607<br/>
+    © 2026 Pinnacle Livestock Marketplace · thomaskiboma@gmail.com · +254 741 101 607<br/>
     <small>You received this because you have a Pinnacle account. <a href="#">Unsubscribe</a></small>
   </div>
 </div>
