@@ -127,10 +127,13 @@ const bcrypt = require('bcryptjs');
 const adminHash = bcrypt.hashSync('Pinnacle@Admin2026', 10);
 db.prepare(`
   INSERT OR IGNORE INTO users (email, password_hash, full_name, phone, role, referral_code)
-  VALUES ('admin@pinnacle.co.ke', ?, 'Pinnacle Admin', '+254741101607', 'admin', 'REF-ADMIN001')
+  VALUES ('admin@pinnacle.co.ke', ?, 'Thomas Kiboma', '+254741101607', 'admin', 'REF-ADMIN001')
 `).run(adminHash);
-// Always force role=admin in case it was changed
-db.prepare("UPDATE users SET role='admin' WHERE email='admin@pinnacle.co.ke'").run();
+// Always keep role=admin and sync Thomas's latest details
+db.prepare(`
+  UPDATE users SET role='admin', full_name='Thomas Kiboma', phone='+254741101607'
+  WHERE email='admin@pinnacle.co.ke'
+`).run();
 console.log('✅ Admin account ready: admin@pinnacle.co.ke / Pinnacle@Admin2026');
 
 // ─── Seed Data ────────────────────────────────────────────────────────────────

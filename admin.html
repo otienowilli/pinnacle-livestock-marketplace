@@ -235,6 +235,7 @@
       </div>
       <div class="nav-item" onclick="showSection('messages')">
         <i class="fas fa-envelope"></i><span>Messages</span>
+        <span class="sidebar-badge" id="messages-nav-badge" style="margin-left:auto;display:none"></span>
       </div>
       <div class="nav-item" onclick="showSection('subscriptions')">
         <i class="fas fa-crown"></i><span>Subscriptions</span>
@@ -251,6 +252,7 @@
     </nav>
     <div class="sidebar-footer">
       <div class="admin-info" id="admin-name-display"></div>
+      <div class="admin-info" id="admin-contact-display" style="font-size:.75rem;line-height:1.6;margin-top:4px;opacity:.85"></div>
       <button class="btn-logout" onclick="adminLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
     </div>
   </aside>
@@ -541,15 +543,44 @@ function bootAdmin(user) {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('admin-shell').style.display = 'flex';
   document.getElementById('admin-name-display').textContent = '👤 ' + user.full_name;
+  document.getElementById('admin-contact-display').innerHTML =
+    `<i class="fas fa-envelope" style="margin-right:4px"></i>thomaskiboma@gmail.com<br>` +
+    `<i class="fas fa-phone" style="margin-right:4px"></i>${user.phone || '+254 741 101 607'}`;
   setInterval(() => {
     document.getElementById('topbar-time').textContent = new Date().toLocaleString('en-KE');
   }, 1000);
   loadDashboard();
+  pollNewMessages();
 }
 
 function adminLogout() {
   localStorage.removeItem('adminToken'); localStorage.removeItem('adminUser');
   location.reload();
+}
+
+// ── New-message poll ───────────────────────────────────────────────────────────
+let _lastMsgCount = null;
+function pollNewMessages() {
+  async function check() {
+    try {
+      const msgs = await apiFetch('/api/admin/contacts');
+      const count = msgs.length;
+      const badge = document.getElementById('messages-nav-badge');
+      if (count > 0) {
+        badge.textContent = count;
+        badge.style.display = '';
+      } else {
+        badge.style.display = 'none';
+      }
+      if (_lastMsgCount !== null && count > _lastMsgCount) {
+        const diff = count - _lastMsgCount;
+        toast(`📩 ${diff} new contact message${diff > 1 ? 's' : ''}! Check Messages.`);
+      }
+      _lastMsgCount = count;
+    } catch(e) { /* silent */ }
+  }
+  check();
+  setInterval(check, 30000); // re-check every 30 seconds
 }
 
 // ── Navigation ────────────────────────────────────────────────────────────────
