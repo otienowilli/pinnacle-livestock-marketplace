@@ -208,6 +208,8 @@ function handleLogout() {
   localStorage.removeItem('pinnacle_user');
   updateNavAuth(null);
   showToast('You have been logged out. See you soon! 👋');
+  // Show the auth gate again so the page is locked
+  setTimeout(() => createAuthGate(), 500);
 }
 
 function initAuth() {
@@ -735,9 +737,185 @@ function initReferral() {
   inp.value = `https://pinnacle.co.ke/ref/${code}`;
 }
 
+/* ============================================================
+   AUTH GATE — blocks all pages until user is logged in
+   ============================================================ */
+function createAuthGate() {
+  if (document.getElementById('auth-gate')) return;
+  const logoSrc = 'WhatsApp Image 2026-03-13 at 08.22.38.jpeg';
+  const gate = document.createElement('div');
+  gate.id = 'auth-gate';
+  gate.innerHTML = `
+    <div class="auth-gate-inner">
+      <!-- Left: branding -->
+      <div class="auth-gate-brand">
+        <div class="gate-brand-logo">
+          <img src="${logoSrc}" alt="Pinnacle Logo"/>
+          <span>PINNACLE</span>
+        </div>
+        <h2>East Africa's Premier Livestock Marketplace</h2>
+        <p>Connect with thousands of verified farmers and buyers across Kenya, Uganda, Tanzania and beyond.</p>
+        <div class="gate-stat-list">
+          <div class="gate-stat">
+            <div class="gate-stat-icon"><i class="fas fa-users"></i></div>
+            <div><strong>4,800+ Active Farmers</strong><span>Growing every day</span></div>
+          </div>
+          <div class="gate-stat">
+            <div class="gate-stat-icon"><i class="fas fa-store"></i></div>
+            <div><strong>12,000+ Livestock Listed</strong><span>Cattle, goats, sheep & more</span></div>
+          </div>
+          <div class="gate-stat">
+            <div class="gate-stat-icon"><i class="fas fa-shield-alt"></i></div>
+            <div><strong>Verified & Secure</strong><span>Trusted by thousands</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: forms -->
+      <div class="auth-gate-form">
+        <h3>Welcome to Pinnacle</h3>
+        <p class="gate-sub">Create a free account or sign in to continue</p>
+
+        <div class="gate-tabs">
+          <button class="gate-tab active" onclick="switchGateTab('register',this)">Create Account</button>
+          <button class="gate-tab" onclick="switchGateTab('login',this)">Sign In</button>
+        </div>
+
+        <!-- Register Panel -->
+        <div id="gateRegPanel">
+          <div class="gate-role-tabs">
+            <button class="gate-role-btn active" onclick="switchGateRole('farmer',this)">🌾 I'm a Farmer</button>
+            <button class="gate-role-btn" onclick="switchGateRole('buyer',this)">🛒 I'm a Buyer</button>
+          </div>
+          <form class="gate-form" id="gateRegForm">
+            <div class="gate-form-row">
+              <input type="text" name="full_name" placeholder="Full Name" required/>
+              <input type="tel" name="phone" placeholder="Phone Number" required/>
+            </div>
+            <input type="email" name="email" placeholder="Email Address" required/>
+            <div id="gateFarmerFields">
+              <input type="text" name="farm_name" placeholder="Farm Name (optional)"/>
+              <select name="livestock_type">
+                <option value="">Main Livestock Type</option>
+                <option>Cattle</option><option>Goats</option><option>Sheep</option>
+                <option>Poultry</option><option>Pigs</option>
+              </select>
+            </div>
+            <input type="hidden" name="role" id="gateRole" value="farmer"/>
+            <input type="password" name="password" placeholder="Create Password" required/>
+            <button type="submit" class="btn btn-primary btn-full">Create Account <i class="fas fa-arrow-right"></i></button>
+            <p class="gate-form-note">Already have an account? <a href="#" onclick="event.preventDefault();switchGateTab('login',document.querySelectorAll('.gate-tab')[1])">Sign in</a></p>
+          </form>
+        </div>
+
+        <!-- Login Panel -->
+        <div id="gateLoginPanel" style="display:none">
+          <form class="gate-form" id="gateLoginForm">
+            <input type="email" name="login_email" placeholder="Email Address" required/>
+            <input type="password" name="login_password" placeholder="Password" required/>
+            <button type="submit" class="btn btn-primary btn-full">Sign In <i class="fas fa-sign-in-alt"></i></button>
+            <p class="gate-form-note">Don't have an account? <a href="#" onclick="event.preventDefault();switchGateTab('register',document.querySelectorAll('.gate-tab')[0])">Register free</a></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertBefore(gate, document.body.firstChild);
+  document.getElementById('gateRegForm').addEventListener('submit', handleGateRegister);
+  document.getElementById('gateLoginForm').addEventListener('submit', handleGateLogin);
+}
+
+function hideAuthGate() {
+  const gate = document.getElementById('auth-gate');
+  if (!gate) return;
+  gate.classList.add('hiding');
+  setTimeout(() => gate.remove(), 420);
+}
+
+function checkAuth() {
+  const token = localStorage.getItem('pinnacle_token');
+  const user  = JSON.parse(localStorage.getItem('pinnacle_user') || 'null');
+  if (!token || !user) {
+    createAuthGate();
+  } else {
+    updateNavAuth(user);
+  }
+}
+
+function switchGateTab(mode, btn) {
+  document.querySelectorAll('.gate-tab').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('gateRegPanel').style.display   = mode === 'register' ? '' : 'none';
+  document.getElementById('gateLoginPanel').style.display = mode === 'login'    ? '' : 'none';
+}
+
+function switchGateRole(role, btn) {
+  document.querySelectorAll('.gate-role-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('gateRole').value = role;
+  document.getElementById('gateFarmerFields').style.display = role === 'farmer' ? '' : 'none';
+}
+
+async function handleGateRegister(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn  = form.querySelector('button[type=submit]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account…';
+  try {
+    const data = await apiFetch('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        email:          form.querySelector('[name=email]').value,
+        password:       form.querySelector('[name=password]').value,
+        full_name:      form.querySelector('[name=full_name]').value,
+        phone:          form.querySelector('[name=phone]').value,
+        role:           form.querySelector('[name=role]').value || 'farmer',
+        farm_name:      form.querySelector('[name=farm_name]')?.value,
+        livestock_type: form.querySelector('[name=livestock_type]')?.value,
+      })
+    });
+    localStorage.setItem('pinnacle_token', data.token);
+    localStorage.setItem('pinnacle_user', JSON.stringify(data.user));
+    updateNavAuth(data.user);
+    hideAuthGate();
+    showToast(`Welcome to Pinnacle, ${data.user.full_name}! 🎉`);
+  } catch(err) {
+    showToast(`❌ ${err.message}`);
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account <i class="fas fa-arrow-right"></i>';
+  }
+}
+
+async function handleGateLogin(e) {
+  e.preventDefault();
+  const form = e.target;
+  const btn  = form.querySelector('button[type=submit]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in…';
+  try {
+    const data = await apiFetch('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({
+        email:    form.querySelector('[name=login_email]').value,
+        password: form.querySelector('[name=login_password]').value,
+      })
+    });
+    localStorage.setItem('pinnacle_token', data.token);
+    localStorage.setItem('pinnacle_user', JSON.stringify(data.user));
+    updateNavAuth(data.user);
+    hideAuthGate();
+    showToast(`Welcome back, ${data.user.full_name}! 👋`);
+  } catch(err) {
+    showToast(`❌ ${err.message}`);
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In <i class="fas fa-sign-in-alt"></i>';
+  }
+}
+
 // ---- Initialise on DOM ready ----
 document.addEventListener('DOMContentLoaded', () => {
-  // Auth
+  // Auth gate — show immediately if not logged in
+  checkAuth();
+  // Sync nav for already-logged-in users
   initAuth();
 
   // Listings
