@@ -922,10 +922,11 @@ async function handleGateRegister(e) {
   const btn  = form.querySelector('button[type=submit]');
   btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account…';
   try {
-    const data = await apiFetch('/auth/register', {
+    const email = form.querySelector('[name=email]').value;
+    await apiFetch('/auth/register', {
       method: 'POST',
       body: JSON.stringify({
-        email:          form.querySelector('[name=email]').value,
+        email,
         password:       form.querySelector('[name=password]').value,
         full_name:      form.querySelector('[name=full_name]').value,
         phone:          form.querySelector('[name=phone]').value,
@@ -934,11 +935,11 @@ async function handleGateRegister(e) {
         livestock_type: form.querySelector('[name=livestock_type]')?.value,
       })
     });
-    localStorage.setItem('pinnacle_token', data.token);
-    localStorage.setItem('pinnacle_user', JSON.stringify(data.user));
-    updateNavAuth(data.user);
-    hideAuthGate();
-    showToast(`Welcome to Pinnacle, ${data.user.full_name}! 🎉`);
+    // Switch to Sign In tab and pre-fill the email
+    switchGateTab('login', document.querySelectorAll('.gate-tab')[1]);
+    const loginEmailInput = document.querySelector('#gateLoginForm [name=login_email]');
+    if (loginEmailInput) loginEmailInput.value = email;
+    showToast('✅ Account created! Please sign in to continue.');
   } catch(err) {
     showToast(`❌ ${err.message}`);
     btn.disabled = false;
