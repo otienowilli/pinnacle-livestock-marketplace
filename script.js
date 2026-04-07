@@ -815,7 +815,20 @@ function createAuthGate() {
             <input type="password" name="login_password" placeholder="Password" required/>
             <button type="submit" class="btn btn-primary btn-full">Sign In <i class="fas fa-sign-in-alt"></i></button>
             <p class="gate-form-note">Don't have an account? <a href="#" onclick="event.preventDefault();switchGateTab('register',document.querySelectorAll('.gate-tab')[0])">Register free</a></p>
+            <p class="gate-form-note"><a href="#" onclick="event.preventDefault();showGateForgot()"><i class="fas fa-key"></i> Forgot password?</a></p>
           </form>
+        </div>
+
+        <!-- Forgot Password Panel -->
+        <div id="gateForgotPanel" style="display:none">
+          <p style="color:var(--gray-600);font-size:.88rem;margin:0 0 18px;line-height:1.6">Enter your email address and we'll send you a link to reset your password.</p>
+          <form class="gate-form" id="gateForgotForm">
+            <input type="email" name="forgot_email" placeholder="Your Email Address" required/>
+            <button type="submit" class="btn btn-primary btn-full">Send Reset Link <i class="fas fa-paper-plane"></i></button>
+          </form>
+          <p class="gate-form-note" style="margin-top:14px">
+            <a href="#" onclick="event.preventDefault();switchGateTab('login',document.querySelectorAll('.gate-tab')[1])"><i class="fas fa-arrow-left"></i> Back to Sign In</a>
+          </p>
         </div>
       </div>
     </div>
@@ -823,6 +836,7 @@ function createAuthGate() {
   document.body.insertBefore(gate, document.body.firstChild);
   document.getElementById('gateRegForm').addEventListener('submit', handleGateRegister);
   document.getElementById('gateLoginForm').addEventListener('submit', handleGateLogin);
+  document.getElementById('gateForgotForm').addEventListener('submit', handleGateForgot);
 }
 
 function hideAuthGate() {
@@ -845,8 +859,54 @@ function checkAuth() {
 function switchGateTab(mode, btn) {
   document.querySelectorAll('.gate-tab').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  document.getElementById('gateRegPanel').style.display   = mode === 'register' ? '' : 'none';
-  document.getElementById('gateLoginPanel').style.display = mode === 'login'    ? '' : 'none';
+  document.getElementById('gateRegPanel').style.display    = mode === 'register' ? '' : 'none';
+  document.getElementById('gateLoginPanel').style.display  = mode === 'login'    ? '' : 'none';
+  const fp = document.getElementById('gateForgotPanel');
+  if (fp) fp.style.display = 'none';
+}
+
+function showGateForgot() {
+  document.querySelectorAll('.gate-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('gateRegPanel').style.display   = 'none';
+  document.getElementById('gateLoginPanel').style.display = 'none';
+  document.getElementById('gateForgotPanel').style.display = '';
+  setTimeout(() => document.querySelector('#gateForgotForm [name=forgot_email]')?.focus(), 80);
+}
+
+async function handleGateForgot(e) {
+  e.preventDefault();
+  const form  = e.target;
+  const email = form.querySelector('[name=forgot_email]').value.trim();
+  const btn   = form.querySelector('button[type=submit]');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending…';
+  try {
+    const data = await apiFetch('/auth/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    });
+    form.innerHTML = `
+      <div style="text-align:center;padding:16px 0">
+        <i class="fas fa-envelope-circle-check" style="font-size:2.8rem;color:var(--green);display:block;margin-bottom:14px"></i>
+        <p style="color:var(--gray-800);font-weight:700;margin:0 0 8px;font-size:1rem">Check your inbox!</p>
+        <p style="color:var(--gray-500);font-size:.85rem;margin:0;line-height:1.6">${data.message}</p>
+      </div>`;
+  } catch(err) {
+    showToast('❌ ' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = 'Send Reset Link <i class="fas fa-paper-plane"></i>';
+  }
+}
+
+// Forgot password from the existing login modal (for logged-in → switch account flow)
+async function forgotPasswordFromModal() {
+  const email = prompt('Enter your registered email address:');
+  if (!email) return;
+  try {
+    const data = await apiFetch('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) });
+    showToast('📧 ' + data.message);
+  } catch(err) {
+    showToast('❌ ' + err.message);
+  }
 }
 
 function switchGateRole(role, btn) {

@@ -124,6 +124,10 @@ db.exec(`
 try { db.prepare('ALTER TABLE contacts ADD COLUMN replied_at TEXT').run(); } catch(e) {}
 try { db.prepare('ALTER TABLE contacts ADD COLUMN reply_text TEXT').run(); } catch(e) {}
 
+// ─── Add password reset columns to users (safe on existing DBs) ──────────────
+try { db.prepare('ALTER TABLE users ADD COLUMN reset_token TEXT').run(); } catch(e) {}
+try { db.prepare('ALTER TABLE users ADD COLUMN reset_token_expires TEXT').run(); } catch(e) {}
+
 // ─── Seed Admin Account ───────────────────────────────────────────────────────
 const bcrypt = require('bcryptjs');
 
