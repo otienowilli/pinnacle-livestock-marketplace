@@ -555,6 +555,15 @@ async function apiFetch(path, options = {}) {
     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + adminToken, ...(options.headers || {}) }
   });
   const data = await res.json();
+  if (res.status === 401) {
+    // Token expired or invalid — clear session and return to login
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('adminUser');
+    adminToken = null;
+    toast('⏱ Session expired — please log in again.', 'error');
+    setTimeout(() => location.reload(), 1800);
+    throw new Error('Session expired');
+  }
   if (!res.ok) throw new Error(data.error || 'Request failed');
   return data;
 }
