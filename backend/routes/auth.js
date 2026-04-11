@@ -36,8 +36,7 @@ router.post('/register', (req, res) => {
 
   const token = jwt.sign(
     { id: result.lastInsertRowid, email, role: role || 'buyer', full_name },
-    JWT_SECRET,
-    { expiresIn: '30d' }
+    JWT_SECRET
   );
   logActivity({ userId: result.lastInsertRowid, userEmail: email, userName: full_name, action: 'register', detail: `New ${role || 'buyer'} account created`, req });
   res.status(201).json({ token, user: { id: result.lastInsertRowid, email, full_name, role: role || 'buyer', referral_code } });
@@ -55,8 +54,7 @@ router.post('/login', (req, res) => {
 
   const token = jwt.sign(
     { id: user.id, email: user.email, role: user.role, full_name: user.full_name },
-    JWT_SECRET,
-    { expiresIn: '30d' }
+    JWT_SECRET
   );
   logActivity({ userId: user.id, userEmail: user.email, userName: user.full_name, action: 'login', detail: `Logged in as ${user.role}`, req });
   res.json({ token, user: { id: user.id, email: user.email, full_name: user.full_name, role: user.role, referral_code: user.referral_code } });
